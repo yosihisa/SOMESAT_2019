@@ -1,0 +1,12 @@
+(fp_lib_table
+  (lib (name ZUNDA_lib)(type KiCad)(uri "$(KIPRJMOD)/ZUNDA_lib.pretty")(options "")(descr ""))
+  (lib (name EDAMAME_LOGO)(type Legacy)(uri "$(KIPRJMOD)/mod/EDAMAME_LOGO.mod")(options "")(descr ""))
+  (lib (name EH)(type Legacy)(uri "$(KIPRJMOD)/mod/EH.mod")(options "")(descr ""))
+  (lib (name GYSFDMAXB)(type Legacy)(uri "$(KIPRJMOD)/mod/GYSFDMAXB.mod")(options "")(descr ""))
+  (lib (name LOGO)(type Legacy)(uri "$(KIPRJMOD)/mod/LOGO.mod")(options "")(descr ""))
+  (lib (name LOGO2)(type Legacy)(uri "$(KIPRJMOD)/mod/LOGO2.mod")(options "")(descr ""))
+  (lib (name mylib)(type Legacy)(uri "$(KIPRJMOD)/mod/mylib.mod")(options "")(descr ""))
+  (lib (name SOMESAT_LOGO)(type Legacy)(uri "$(KIPRJMOD)/mod/SOMESAT_LOGO.mod")(options "")(descr ""))
+  (lib (name TG111-2)(type Legacy)(uri "$(KIPRJMOD)/mod/TG111-2.mod")(options "")(descr ""))
+  (lib (name TWE-Lite)(type Legacy)(uri "$(KIPRJMOD)/mod/TWE-Lite.mod")(options "")(descr ""))
+)
