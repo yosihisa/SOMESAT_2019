@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name mylib)(type Legacy)(uri D:/KiCad/share/kicad/user_library/mylib.mod)(options "")(descr ""))
+  (lib (name mod)(type KiCad)(uri "$(KIPRJMOD)/mod")(options "")(descr ""))
+)
