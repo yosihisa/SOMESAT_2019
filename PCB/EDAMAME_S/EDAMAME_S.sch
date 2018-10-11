@@ -5,10 +5,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
+Title "EDAMAME_S"
+Date "2018-06-23"
+Rev "V0.1"
+Comp "SOMESAT @n_yosihisa"
 Comment1 ""
 Comment2 ""
 Comment3 ""
