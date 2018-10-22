@@ -1,7 +1,7 @@
 #include <Wire.h>
 #define LSM303AGR_A 0x19
 #define LSM303AGR_M 0x1E
-#define INA226    0x45
+#define INA226      0x45
 
 #define MOTOR_LF  25
 #define MOTOR_LR  26
@@ -10,8 +10,8 @@
 #define NICHROME  13
 #define SD_CS     4
 
-HardwareSerial Serial2(2);
-TaskHandle_t th_gps;
+//HardwareSerial Serial2(2);
+//TaskHandle_t th_gps;
 
 struct Compass{
   int16_t x;
@@ -52,7 +52,6 @@ void setup() {
 
   //I2C初期化
   Wire.begin(21, 22);
-  byte val;
   //地磁気設定
   Wire.beginTransmission(LSM303AGR_M);
   Wire.write(0x60);
@@ -89,7 +88,7 @@ void setup() {
   pinMode(NICHROME, OUTPUT);
   digitalWrite(NICHROME, LOW);
 
-  xTaskCreatePinnedToCore(get_gps, "GET_GPS", 4096, NULL, 2, &th_gps, 0);
+  //xTaskCreatePinnedToCore(get_gps, "GET_GPS", 4096, NULL, 2, &th_gps, 0);
 
   //地磁気キャリブレーション
   compass_calibration(&compass, 1000);
@@ -111,7 +110,7 @@ void setup() {
     if(compass.arg > 0.3){
       motor(0,200);
     }
-    delay(10);
+    delay(100);
 
     cnt++;
   }
