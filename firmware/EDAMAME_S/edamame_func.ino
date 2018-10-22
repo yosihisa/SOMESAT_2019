@@ -1,6 +1,5 @@
-
 //モーターの速度変更
-void motor(int l ,int r){
+void motor(long l ,long r){
   if(l>=0){
     ledcWrite(0, l);
     ledcWrite(1, 0);
@@ -207,7 +206,6 @@ void uart_send() {
   Serial.println("");
   return;
 }
-
 //制御履歴を書き込む
 void SD_write() {
   String SDString = "";
@@ -256,4 +254,3 @@ void SD_write() {
   return;
 }
 */
-
