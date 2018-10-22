@@ -1,5 +1,5 @@
 //モーターの速度変更
-void motor(int l ,int r){
+void motor(long l ,long r){
   if(l>=0){
     ledcWrite(0, l);
     ledcWrite(1, 0);
