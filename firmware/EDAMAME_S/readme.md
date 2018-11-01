@@ -1,4 +1,36 @@
 # えだまめS関数リファレンス  
+### 概要  
+- edamame_core.h  
+    - 定数  
+    - class LSM303
+        - LSM303(uint8_t,uint8_t); //コンストラクタ
+        - void init_a(); //加速度センサの初期化
+        - void init_m(); //地磁気センサの初期化
+        - void update_a(); //加速度の更新
+        - void update_m(); //地磁気の更新
+        - void set_offset(); //地磁気オフセットの設定
+        - int16_t x,y,z; //現在の地磁気
+        - int16_t x_offset=0;
+        - int16_t y_offset=0;
+        - int16_t z_offset=0;
+        - double arg; //現在の方位
+    - class GNSS //未実装  
+- edamame_ex.h 
+    - 定数
+    - class Power
+        - Power(uint8_t); //コンストラクタ
+        - void update(); //電流・電圧計更新
+        - void init(); //電流・電圧計初期化
+        - double voltage; //現在の電圧
+        - double current; //現在の電流  
+    - class Motor  
+        - Motor(int,int,int,int); //コンストラクタ  
+        - void init(int,int); //PWM初期化
+        - void speed(int ,int); //速度設定
+    - class Nichrome  
+        - Nichrome(int); //コンストラクタ
+        - void fire(int); //ニクロム線の出力　　
+---  
 
 ## edamame_core.h  
 えだまめコアボードに搭載されているセンサ類との通信・制御に用いる関数・クラスが宣言されているファイルです。
