@@ -1,11 +1,9 @@
 /*
 
     重要
-    ESP32のボードのバージョンは1.0.0-rc3を使ってください
+    ESP32のボードのバージョンは最新のmaster(85032b2)を使ってください。(2018/10/24)
+    ボードマネージャから追加するのではなく、cloneしてget.exeを使うやつ
     
-    以下のアドレスを追加ボードに追加
-    https://dl.espressif.com/dl/package_esp32_index.json
-    https://dl.espressif.com/dl/package_esp32_dev_index.json
 */
 #include <Wire.h>
 #include "edamame_core.h"
