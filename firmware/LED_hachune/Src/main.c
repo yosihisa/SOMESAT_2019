@@ -41,7 +41,8 @@
 #include "stm32f0xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include "led_hachune.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -51,6 +52,16 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+// ïWèÄèoóÕÇUART1Ç÷
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+void __io_putchar(uint8_t ch) {
+  HAL_UART_Transmit(&huart1, &ch, 1, 1);
+}
+
 
 /* USER CODE END PV */
 
@@ -66,6 +77,19 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+//test_uart
+void test_uart(){
+  printf("Hello UART1!\n");
+  uint8_t c;
+  while (1){
+    if( HAL_UART_Receive( &huart1, &c, 1, 0xFFFF ) == HAL_OK ){
+      printf("UART1: %c\n", c);
+    }
+  }
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -86,7 +110,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  setbuf(stdout, NULL);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -101,6 +125,26 @@ int main(void)
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  //test_uart();
+
+  uint32_t c=0;
+
+  led_hachune_t hachune[3];
+
+  hachune[0].led[0] = get_color(0x00fa9a);
+  hachune[0].led[1] = get_color(0x00FF00);
+  hachune[0].led[2] = get_color(0x000000);
+  hachune[0].led[3] = get_color(0x000000);
+
+  hachune[1].led[0] = get_color(0x00fa9a);
+  hachune[1].led[1] = get_color(0x000000);
+  hachune[1].led[2] = get_color(0x00FF00);
+  hachune[1].led[3] = get_color(0x000000);
+
+  hachune[2].led[0] = get_color(0x00fa9a);
+  hachune[2].led[1] = get_color(0x000000);
+  hachune[2].led[2] = get_color(0x000000);
+  hachune[2].led[3] = get_color(0x00FF00);
 
   /* USER CODE END 2 */
 
@@ -108,10 +152,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+	led_hachune(&hachune[0]);
+	HAL_Delay(500);
+	led_hachune(&hachune[1]);
+	HAL_Delay(500);
+	led_hachune(&hachune[2]);
+	HAL_Delay(500);
+	led_hachune(&hachune[1]);
+	HAL_Delay(500);
 
   }
   /* USER CODE END 3 */
@@ -131,8 +182,9 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI48;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -144,11 +196,11 @@ void SystemClock_Config(void)
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -245,13 +297,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED0_Pin|LED1_Pin|LED2_Pin|LED3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PA0 PA1 PA2 PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
+  /*Configure GPIO pins : LED0_Pin LED1_Pin LED2_Pin LED3_Pin */
+  GPIO_InitStruct.Pin = LED0_Pin|LED1_Pin|LED2_Pin|LED3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }

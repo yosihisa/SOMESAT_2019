@@ -25,6 +25,9 @@ struct gps {
 struct gps gps_data;
 
 void setup() {
+  
+  //起動時の安定を願って
+  delay(500);
 
   //シリアルポート初期化
   Serial.begin(115200);
@@ -55,7 +58,7 @@ void setup() {
   //compass_calibration(&compass, 1000);
   uint32_t cnt=0;
   while(1){
-    //motor.speed(cnt%2048-1024,cnt%2048-1024);
+    motor.speed(cnt%2048-1024,cnt%2048-1024);
     //nichrome.fire(cnt%255);
     compass.update_m();
     ina226.update();
