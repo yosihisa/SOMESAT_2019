@@ -1,0 +1,2351 @@
+EESchema Schematic File Version 4
+LIBS:LED_hachune-cache
+EELAYER 26 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 1 1
+Title "LED Hachune"
+Date "2018-11-06"
+Rev "1.0"
+Comp "SOMESAT"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text Label 1350 1100 2    50   ~ 0
+SWCLK
+Text Label 1350 1200 2    50   ~ 0
+SWDIO
+Text Label 2750 1900 0    50   ~ 0
+NRST
+Text Label 1350 1000 2    50   ~ 0
+RX
+Text Label 1350 900  2    50   ~ 0
+TX
+Text Label 4600 2800 2    50   ~ 0
+RX
+Text Label 4600 2700 2    50   ~ 0
+TX
+Text Label 2600 2600 0    50   ~ 0
+SDA
+Text Label 2600 2700 0    50   ~ 0
+SCL
+Text Label 4600 3000 2    50   ~ 0
+SWCLK
+Text Label 4600 2900 2    50   ~ 0
+SWDIO
+$Comp
+L Connector_Generic:Conn_01x03 J2
+U 1 1 5BE1D3FF
+P 1800 1000
+F 0 "J2" H 1720 1317 50  0000 C CNN
+F 1 "DATA" H 1720 1226 50  0000 C CNN
+F 2 "Connector_JST:JST_EH_S03B-EH_1x03_P2.50mm_Horizontal" H 1800 1000 50  0001 C CNN
+F 3 "~" H 1800 1000 50  0001 C CNN
+	1    1800 1000
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J1
+U 1 1 5BE1D4C2
+P 2700 900
+F 0 "J1" H 2620 1117 50  0000 C CNN
+F 1 "POWER" H 2620 1026 50  0000 C CNN
+F 2 "Connector_JST:JST_EH_S02B-EH_1x02_P2.50mm_Horizontal" H 2700 900 50  0001 C CNN
+F 3 "~" H 2700 900 50  0001 C CNN
+	1    2700 900 
+	-1   0    0    -1  
+$EndComp
+Text Label 2300 900  2    50   ~ 0
+SCL
+Text Label 2300 1000 2    50   ~ 0
+SDA
+$Comp
+L power:GND #PWR05
+U 1 1 5BE1D7F0
+P 3050 1000
+F 0 "#PWR05" H 3050 750 50  0001 C CNN
+F 1 "GND" H 3055 827 50  0000 C CNN
+F 2 "" H 3050 1000 50  0001 C CNN
+F 3 "" H 3050 1000 50  0001 C CNN
+	1    3050 1000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR01
+U 1 1 5BE1D82F
+P 3050 900
+F 0 "#PWR01" H 3050 750 50  0001 C CNN
+F 1 "+BATT" H 3065 1073 50  0000 C CNN
+F 2 "" H 3050 900 50  0001 C CNN
+F 3 "" H 3050 900 50  0001 C CNN
+	1    3050 900 
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR04
+U 1 1 5BE1D87C
+P 1350 1300
+F 0 "#PWR04" H 1350 1050 50  0001 C CNN
+F 1 "GND" V 1355 1172 50  0000 R CNN
+F 2 "" H 1350 1300 50  0001 C CNN
+F 3 "" H 1350 1300 50  0001 C CNN
+	1    1350 1300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+3.3V #PWR015
+U 1 1 5BE1D958
+P 3450 1600
+F 0 "#PWR015" H 3450 1450 50  0001 C CNN
+F 1 "+3.3V" H 3465 1773 50  0000 C CNN
+F 2 "" H 3450 1600 50  0001 C CNN
+F 3 "" H 3450 1600 50  0001 C CNN
+	1    3450 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1000 900  1350 900 
+Wire Wire Line
+	1350 1000 1000 1000
+Wire Wire Line
+	1000 1100 1350 1100
+Wire Wire Line
+	1350 1200 1000 1200
+Wire Wire Line
+	1000 1300 1350 1300
+Wire Wire Line
+	2000 900  2300 900 
+Wire Wire Line
+	2300 1000 2000 1000
+$Comp
+L power:GND #PWR06
+U 1 1 5BE1DB50
+P 2300 1100
+F 0 "#PWR06" H 2300 850 50  0001 C CNN
+F 1 "GND" V 2305 972 50  0000 R CNN
+F 2 "" H 2300 1100 50  0001 C CNN
+F 3 "" H 2300 1100 50  0001 C CNN
+	1    2300 1100
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2300 1100 2000 1100
+Wire Wire Line
+	2900 900  3050 900 
+Wire Wire Line
+	3050 1000 2900 1000
+Wire Wire Line
+	2600 1900 3000 1900
+Wire Wire Line
+	2600 2600 3000 2600
+Wire Wire Line
+	3000 2700 2600 2700
+Wire Wire Line
+	4200 2900 4600 2900
+Wire Wire Line
+	4600 3000 4200 3000
+$Comp
+L user_library:TPS63000 U3
+U 1 1 5BE9E81D
+P 12250 2400
+F 0 "U3" H 12250 3067 50  0000 C CNN
+F 1 "TPS63001" H 12250 2976 50  0000 C CNN
+F 2 "Package_SON:Texas_S-PVSON-N10_ThermalVias" H 12250 1750 50  0001 C CNN
+F 3 "https://strawberry-linux.com/pub/tps63000.pdf" H 12250 2400 50  0001 C CNN
+	1    12250 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:L L1
+U 1 1 5BEA2846
+P 12250 1650
+F 0 "L1" V 12440 1650 50  0000 C CNN
+F 1 "2.2uH VLF4012-2R2" V 12349 1650 50  0000 C CNN
+F 2 "user:inductor_VLF4012-2R2" H 12250 1650 50  0001 C CNN
+F 3 "~" H 12250 1650 50  0001 C CNN
+	1    12250 1650
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	12100 1650 11800 1650
+Wire Wire Line
+	11800 1650 11800 2000
+Wire Wire Line
+	11800 2000 11850 2000
+Wire Wire Line
+	12650 2000 12700 2000
+Wire Wire Line
+	12700 1650 12400 1650
+Wire Wire Line
+	11450 2300 11450 2200
+Wire Wire Line
+	11450 2600 11450 2500
+Connection ~ 11450 2300
+Wire Wire Line
+	12250 3150 12250 3050
+$Comp
+L Jumper:SolderJumper_2_Open JP1
+U 1 1 5BEC4EC4
+P 11600 2500
+F 0 "JP1" H 11350 2600 50  0000 C CNN
+F 1 "EN" H 11600 2614 50  0000 C CNN
+F 2 "Jumper:SolderJumper-2_P1.3mm_Open_Pad1.0x1.5mm" H 11600 2500 50  0001 C CNN
+F 3 "~" H 11600 2500 50  0001 C CNN
+	1    11600 2500
+	1    0    0    -1  
+$EndComp
+Connection ~ 11450 2500
+Wire Wire Line
+	11750 2500 11850 2500
+Wire Wire Line
+	11450 2600 11850 2600
+Wire Wire Line
+	11450 2300 11850 2300
+Wire Wire Line
+	11450 2200 11850 2200
+$Comp
+L Device:C C3
+U 1 1 5BEE7F3A
+P 11450 2900
+F 0 "C3" H 11565 2946 50  0000 L CNN
+F 1 "10u" H 11565 2855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 11488 2750 50  0001 C CNN
+F 3 "~" H 11450 2900 50  0001 C CNN
+	1    11450 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C4
+U 1 1 5BEE8092
+P 12800 2950
+F 0 "C4" H 12915 2996 50  0000 L CNN
+F 1 "10u" H 12915 2905 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 12838 2800 50  0001 C CNN
+F 3 "~" H 12800 2950 50  0001 C CNN
+	1    12800 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C1
+U 1 1 5BEE80EA
+P 1750 2800
+F 0 "C1" H 1865 2846 50  0000 L CNN
+F 1 "10u" H 1865 2755 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1788 2650 50  0001 C CNN
+F 3 "~" H 1750 2800 50  0001 C CNN
+	1    1750 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C2
+U 1 1 5BEE8136
+P 2150 2800
+F 0 "C2" H 2265 2846 50  0000 L CNN
+F 1 "0.1u" H 2265 2755 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2188 2650 50  0001 C CNN
+F 3 "~" H 2150 2800 50  0001 C CNN
+	1    2150 2800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12650 2200 12800 2200
+Wire Wire Line
+	12800 2800 12800 2400
+Wire Wire Line
+	12650 2400 12800 2400
+Connection ~ 12800 2400
+Wire Wire Line
+	12800 2400 12800 2200
+Wire Wire Line
+	11450 3050 11450 3150
+Wire Wire Line
+	11450 2750 11450 2600
+Connection ~ 11450 2600
+$Comp
+L power:GND #PWR013
+U 1 1 5BF21F41
+P 1350 3000
+F 0 "#PWR013" H 1350 2750 50  0001 C CNN
+F 1 "GND" H 1355 2827 50  0000 C CNN
+F 2 "" H 1350 3000 50  0001 C CNN
+F 3 "" H 1350 3000 50  0001 C CNN
+	1    1350 3000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR014
+U 1 1 5BF21F7E
+P 2150 3000
+F 0 "#PWR014" H 2150 2750 50  0001 C CNN
+F 1 "GND" H 2155 2827 50  0000 C CNN
+F 2 "" H 2150 3000 50  0001 C CNN
+F 3 "" H 2150 3000 50  0001 C CNN
+	1    2150 3000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2150 2950 2150 3000
+Wire Wire Line
+	12800 3100 12800 3150
+$Comp
+L Connector_Generic:Conn_01x05 J3
+U 1 1 5BE575D1
+P 800 1100
+F 0 "J3" H 720 1517 50  0000 C CNN
+F 1 "STlink" H 720 1426 50  0000 C CNN
+F 2 "user:STlink" H 800 1100 50  0001 C CNN
+F 3 "~" H 800 1100 50  0001 C CNN
+	1    800  1100
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x14_Female J5
+U 1 1 5CE38695
+P 5700 2350
+F 0 "J5" H 5727 2326 50  0000 L CNN
+F 1 "LED_L" H 5727 2235 50  0000 L CNN
+F 2 "LED_Frame:LED_socket" H 5700 2350 50  0001 C CNN
+F 3 "~" H 5700 2350 50  0001 C CNN
+	1    5700 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x14_Male J4
+U 1 1 5CE38678
+P 1500 5900
+F 0 "J4" H 1606 6678 50  0000 C CNN
+F 1 "LED_L" H 1606 6587 50  0000 C CNN
+F 2 "LED_Frame:LED_Frame" H 1500 5900 50  0001 C CNN
+F 3 "~" H 1500 5900 50  0001 C CNN
+	1    1500 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D1
+U 1 1 5C162225
+P 2450 4750
+F 0 "D1" H 2500 5000 50  0000 L CNN
+F 1 "S6812Side" H 2500 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 2500 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 2550 4375 50  0001 L TNN
+	1    2450 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR011
+U 1 1 5C295594
+P 5350 1950
+F 0 "#PWR011" H 5350 1800 50  0001 C CNN
+F 1 "+BATT" V 5365 2077 50  0000 L CNN
+F 2 "" H 5350 1950 50  0001 C CNN
+F 3 "" H 5350 1950 50  0001 C CNN
+	1    5350 1950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR028
+U 1 1 5C29566B
+P 5350 3000
+F 0 "#PWR028" H 5350 2750 50  0001 C CNN
+F 1 "GND" V 5355 2872 50  0000 R CNN
+F 2 "" H 5350 3000 50  0001 C CNN
+F 3 "" H 5350 3000 50  0001 C CNN
+	1    5350 3000
+	0    1    1    0   
+$EndComp
+Text Label 5250 2050 0    50   ~ 0
+LED_0
+Text Label 5250 2150 0    50   ~ 0
+LED_1
+Text Label 5250 2250 0    50   ~ 0
+LED_2
+Text Label 5250 2350 0    50   ~ 0
+LED_3
+Text Label 5250 2750 0    50   ~ 0
+LED_0
+Text Label 5250 2650 0    50   ~ 0
+LED_1
+Text Label 5250 2550 0    50   ~ 0
+LED_2
+Text Label 5250 2450 0    50   ~ 0
+LED_3
+$Comp
+L power:+BATT #PWR024
+U 1 1 5C2A5259
+P 5350 2850
+F 0 "#PWR024" H 5350 2700 50  0001 C CNN
+F 1 "+BATT" V 5365 2977 50  0000 L CNN
+F 2 "" H 5350 2850 50  0001 C CNN
+F 3 "" H 5350 2850 50  0001 C CNN
+	1    5350 2850
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR07
+U 1 1 5C2A5328
+P 5350 1800
+F 0 "#PWR07" H 5350 1550 50  0001 C CNN
+F 1 "GND" V 5355 1672 50  0000 R CNN
+F 2 "" H 5350 1800 50  0001 C CNN
+F 3 "" H 5350 1800 50  0001 C CNN
+	1    5350 1800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5500 2950 5350 2950
+Wire Wire Line
+	5350 2950 5350 3000
+Wire Wire Line
+	5350 3000 5350 3050
+Wire Wire Line
+	5350 3050 5500 3050
+Connection ~ 5350 3000
+Wire Wire Line
+	5500 2850 5350 2850
+Wire Wire Line
+	5250 2750 5500 2750
+Wire Wire Line
+	5500 2650 5250 2650
+Wire Wire Line
+	5250 2550 5500 2550
+Wire Wire Line
+	5500 2450 5250 2450
+Wire Wire Line
+	5250 2350 5500 2350
+Wire Wire Line
+	5500 2250 5250 2250
+Wire Wire Line
+	5250 2150 5500 2150
+Wire Wire Line
+	5500 2050 5250 2050
+Wire Wire Line
+	5350 1950 5500 1950
+Wire Wire Line
+	5500 1850 5350 1850
+Wire Wire Line
+	5350 1850 5350 1800
+Wire Wire Line
+	5350 1800 5350 1750
+Wire Wire Line
+	5350 1750 5500 1750
+Connection ~ 5350 1800
+$Comp
+L power:GND #PWR022
+U 1 1 5BE1D8F6
+P 3400 3200
+F 0 "#PWR022" H 3400 2950 50  0001 C CNN
+F 1 "GND" H 3405 3027 50  0000 C CNN
+F 2 "" H 3400 3200 50  0001 C CNN
+F 3 "" H 3400 3200 50  0001 C CNN
+	1    3400 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D2
+U 1 1 5C2DF826
+P 3050 4750
+F 0 "D2" H 3100 5000 50  0000 L CNN
+F 1 "S6812Side" H 3100 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3100 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3150 4375 50  0001 L TNN
+	1    3050 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D3
+U 1 1 5C2DF860
+P 3650 4750
+F 0 "D3" H 3700 5000 50  0000 L CNN
+F 1 "S6812Side" H 3700 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3700 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3750 4375 50  0001 L TNN
+	1    3650 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2450 5050 2450 5100
+Wire Wire Line
+	2450 5100 3050 5100
+Wire Wire Line
+	3650 5100 3650 5050
+Wire Wire Line
+	3050 5050 3050 5100
+Wire Wire Line
+	3650 4450 3650 4400
+Wire Wire Line
+	3650 4400 3050 4400
+Wire Wire Line
+	2450 4400 2450 4450
+Wire Wire Line
+	3050 4450 3050 4400
+Connection ~ 3050 4400
+Wire Wire Line
+	3050 4400 2450 4400
+$Comp
+L user_library:S6812Side D4
+U 1 1 5C2EB47F
+P 2450 5550
+F 0 "D4" H 2500 5800 50  0000 L CNN
+F 1 "S6812Side" H 2500 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 2500 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 2550 5175 50  0001 L TNN
+	1    2450 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D5
+U 1 1 5C2EB486
+P 3050 5550
+F 0 "D5" H 3100 5800 50  0000 L CNN
+F 1 "S6812Side" H 3100 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3100 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3150 5175 50  0001 L TNN
+	1    3050 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D6
+U 1 1 5C2EB48D
+P 3650 5550
+F 0 "D6" H 3700 5800 50  0000 L CNN
+F 1 "S6812Side" H 3700 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3700 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3750 5175 50  0001 L TNN
+	1    3650 5550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3650 5250 3650 5200
+Wire Wire Line
+	3650 5200 3050 5200
+Wire Wire Line
+	2450 5200 2450 5250
+Wire Wire Line
+	3050 5250 3050 5200
+Connection ~ 3050 5200
+Wire Wire Line
+	3050 5200 2450 5200
+$Comp
+L user_library:S6812Side D7
+U 1 1 5C2EF050
+P 2450 6350
+F 0 "D7" H 2500 6600 50  0000 L CNN
+F 1 "S6812Side" H 2500 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 2500 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 2550 5975 50  0001 L TNN
+	1    2450 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D8
+U 1 1 5C2EF057
+P 3050 6350
+F 0 "D8" H 3100 6600 50  0000 L CNN
+F 1 "S6812Side" H 3100 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3100 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3150 5975 50  0001 L TNN
+	1    3050 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D9
+U 1 1 5C2EF05E
+P 3650 6350
+F 0 "D9" H 3700 6600 50  0000 L CNN
+F 1 "S6812Side" H 3700 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3700 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3750 5975 50  0001 L TNN
+	1    3650 6350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3650 6050 3650 6000
+Wire Wire Line
+	3650 6000 3050 6000
+Wire Wire Line
+	2450 6000 2450 6050
+Wire Wire Line
+	3050 6050 3050 6000
+Connection ~ 3050 6000
+Wire Wire Line
+	3050 6000 2450 6000
+Wire Wire Line
+	3650 6850 3650 6800
+Wire Wire Line
+	3650 6800 3050 6800
+Wire Wire Line
+	2450 6800 2450 6850
+Wire Wire Line
+	3050 6850 3050 6800
+Connection ~ 3050 6800
+Wire Wire Line
+	3050 6800 2450 6800
+Wire Wire Line
+	2450 6800 2050 6800
+Wire Wire Line
+	2050 6800 2050 6400
+Wire Wire Line
+	2050 4400 2450 4400
+Connection ~ 2450 6800
+Connection ~ 2450 4400
+Wire Wire Line
+	1700 6500 2100 6500
+Wire Wire Line
+	1700 6600 2100 6600
+Wire Wire Line
+	1700 6400 2050 6400
+Connection ~ 2050 6400
+Wire Wire Line
+	2050 6400 2050 6000
+Wire Wire Line
+	1700 5500 2050 5500
+Connection ~ 2050 5500
+Wire Wire Line
+	2050 5500 2050 5200
+Wire Wire Line
+	2150 5550 2000 5550
+Wire Wire Line
+	2000 5550 2000 5700
+Wire Wire Line
+	2150 6350 1950 6350
+Wire Wire Line
+	2150 4750 1900 4750
+Wire Wire Line
+	1900 4750 1900 5600
+Wire Wire Line
+	1850 7150 2150 7150
+$Comp
+L Connector:Conn_01x14_Female J9
+U 1 1 5C434693
+P 6750 2350
+F 0 "J9" H 6777 2326 50  0000 L CNN
+F 1 "LED_R" H 6777 2235 50  0000 L CNN
+F 2 "LED_Frame:LED_socket" H 6750 2350 50  0001 C CNN
+F 3 "~" H 6750 2350 50  0001 C CNN
+	1    6750 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR012
+U 1 1 5C43469A
+P 6400 1950
+F 0 "#PWR012" H 6400 1800 50  0001 C CNN
+F 1 "+BATT" V 6415 2077 50  0000 L CNN
+F 2 "" H 6400 1950 50  0001 C CNN
+F 3 "" H 6400 1950 50  0001 C CNN
+	1    6400 1950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR029
+U 1 1 5C4346A0
+P 6400 3000
+F 0 "#PWR029" H 6400 2750 50  0001 C CNN
+F 1 "GND" V 6405 2872 50  0000 R CNN
+F 2 "" H 6400 3000 50  0001 C CNN
+F 3 "" H 6400 3000 50  0001 C CNN
+	1    6400 3000
+	0    1    1    0   
+$EndComp
+Text Label 6300 2050 0    50   ~ 0
+LED_0
+Text Label 6300 2150 0    50   ~ 0
+LED_1
+Text Label 6300 2250 0    50   ~ 0
+LED_2
+Text Label 6300 2350 0    50   ~ 0
+LED_3
+Text Label 6300 2750 0    50   ~ 0
+LED_0
+Text Label 6300 2650 0    50   ~ 0
+LED_1
+Text Label 6300 2550 0    50   ~ 0
+LED_2
+Text Label 6300 2450 0    50   ~ 0
+LED_3
+$Comp
+L power:+BATT #PWR025
+U 1 1 5C4346AE
+P 6400 2850
+F 0 "#PWR025" H 6400 2700 50  0001 C CNN
+F 1 "+BATT" V 6415 2977 50  0000 L CNN
+F 2 "" H 6400 2850 50  0001 C CNN
+F 3 "" H 6400 2850 50  0001 C CNN
+	1    6400 2850
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR08
+U 1 1 5C4346B4
+P 6400 1800
+F 0 "#PWR08" H 6400 1550 50  0001 C CNN
+F 1 "GND" V 6405 1672 50  0000 R CNN
+F 2 "" H 6400 1800 50  0001 C CNN
+F 3 "" H 6400 1800 50  0001 C CNN
+	1    6400 1800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6550 2950 6400 2950
+Wire Wire Line
+	6400 2950 6400 3000
+Wire Wire Line
+	6400 3000 6400 3050
+Wire Wire Line
+	6400 3050 6550 3050
+Connection ~ 6400 3000
+Wire Wire Line
+	6550 2850 6400 2850
+Wire Wire Line
+	6300 2750 6550 2750
+Wire Wire Line
+	6550 2650 6300 2650
+Wire Wire Line
+	6300 2550 6550 2550
+Wire Wire Line
+	6550 2450 6300 2450
+Wire Wire Line
+	6300 2350 6550 2350
+Wire Wire Line
+	6550 2250 6300 2250
+Wire Wire Line
+	6300 2150 6550 2150
+Wire Wire Line
+	6550 2050 6300 2050
+Wire Wire Line
+	6400 1950 6550 1950
+Wire Wire Line
+	6550 1850 6400 1850
+Wire Wire Line
+	6400 1850 6400 1800
+Wire Wire Line
+	6400 1800 6400 1750
+Wire Wire Line
+	6400 1750 6550 1750
+Connection ~ 6400 1800
+$Comp
+L Connector:Conn_01x14_Female J10
+U 1 1 5C4CFE79
+P 7750 2350
+F 0 "J10" H 7777 2326 50  0000 L CNN
+F 1 "LED_T" H 7777 2235 50  0000 L CNN
+F 2 "LED_Frame:LED_socket" H 7750 2350 50  0001 C CNN
+F 3 "~" H 7750 2350 50  0001 C CNN
+	1    7750 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR018
+U 1 1 5C4CFE80
+P 7400 1950
+F 0 "#PWR018" H 7400 1800 50  0001 C CNN
+F 1 "+BATT" V 7415 2077 50  0000 L CNN
+F 2 "" H 7400 1950 50  0001 C CNN
+F 3 "" H 7400 1950 50  0001 C CNN
+	1    7400 1950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR030
+U 1 1 5C4CFE86
+P 7400 3000
+F 0 "#PWR030" H 7400 2750 50  0001 C CNN
+F 1 "GND" V 7405 2872 50  0000 R CNN
+F 2 "" H 7400 3000 50  0001 C CNN
+F 3 "" H 7400 3000 50  0001 C CNN
+	1    7400 3000
+	0    1    1    0   
+$EndComp
+Text Label 7300 2050 0    50   ~ 0
+LED_0
+Text Label 7300 2150 0    50   ~ 0
+LED_1
+Text Label 7300 2250 0    50   ~ 0
+LED_2
+Text Label 7300 2350 0    50   ~ 0
+LED_3
+Text Label 7300 2750 0    50   ~ 0
+LED_0
+Text Label 7300 2650 0    50   ~ 0
+LED_1
+Text Label 7300 2550 0    50   ~ 0
+LED_2
+Text Label 7300 2450 0    50   ~ 0
+LED_3
+$Comp
+L power:+BATT #PWR026
+U 1 1 5C4CFE94
+P 7400 2850
+F 0 "#PWR026" H 7400 2700 50  0001 C CNN
+F 1 "+BATT" V 7415 2977 50  0000 L CNN
+F 2 "" H 7400 2850 50  0001 C CNN
+F 3 "" H 7400 2850 50  0001 C CNN
+	1    7400 2850
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR09
+U 1 1 5C4CFE9A
+P 7400 1800
+F 0 "#PWR09" H 7400 1550 50  0001 C CNN
+F 1 "GND" V 7405 1672 50  0000 R CNN
+F 2 "" H 7400 1800 50  0001 C CNN
+F 3 "" H 7400 1800 50  0001 C CNN
+	1    7400 1800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7550 2950 7400 2950
+Wire Wire Line
+	7400 2950 7400 3000
+Wire Wire Line
+	7400 3000 7400 3050
+Wire Wire Line
+	7400 3050 7550 3050
+Connection ~ 7400 3000
+Wire Wire Line
+	7550 2850 7400 2850
+Wire Wire Line
+	7300 2750 7550 2750
+Wire Wire Line
+	7550 2650 7300 2650
+Wire Wire Line
+	7300 2550 7550 2550
+Wire Wire Line
+	7550 2450 7300 2450
+Wire Wire Line
+	7300 2350 7550 2350
+Wire Wire Line
+	7550 2250 7300 2250
+Wire Wire Line
+	7300 2150 7550 2150
+Wire Wire Line
+	7550 2050 7300 2050
+Wire Wire Line
+	7400 1950 7550 1950
+Wire Wire Line
+	7550 1850 7400 1850
+Wire Wire Line
+	7400 1850 7400 1800
+Wire Wire Line
+	7400 1800 7400 1750
+Wire Wire Line
+	7400 1750 7550 1750
+Connection ~ 7400 1800
+$Comp
+L Connector:Conn_01x14_Female J11
+U 1 1 5C4CFEB4
+P 8800 2350
+F 0 "J11" H 8827 2326 50  0000 L CNN
+F 1 "LED_B" H 8827 2235 50  0000 L CNN
+F 2 "LED_Frame:LED_socket" H 8800 2350 50  0001 C CNN
+F 3 "~" H 8800 2350 50  0001 C CNN
+	1    8800 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR023
+U 1 1 5C4CFEBB
+P 8450 1950
+F 0 "#PWR023" H 8450 1800 50  0001 C CNN
+F 1 "+BATT" V 8465 2077 50  0000 L CNN
+F 2 "" H 8450 1950 50  0001 C CNN
+F 3 "" H 8450 1950 50  0001 C CNN
+	1    8450 1950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR031
+U 1 1 5C4CFEC1
+P 8450 3000
+F 0 "#PWR031" H 8450 2750 50  0001 C CNN
+F 1 "GND" V 8455 2872 50  0000 R CNN
+F 2 "" H 8450 3000 50  0001 C CNN
+F 3 "" H 8450 3000 50  0001 C CNN
+	1    8450 3000
+	0    1    1    0   
+$EndComp
+Text Label 8350 2050 0    50   ~ 0
+LED_0
+Text Label 8350 2150 0    50   ~ 0
+LED_1
+Text Label 8350 2250 0    50   ~ 0
+LED_2
+Text Label 8350 2350 0    50   ~ 0
+LED_3
+Text Label 8350 2750 0    50   ~ 0
+LED_0
+Text Label 8350 2650 0    50   ~ 0
+LED_1
+Text Label 8350 2550 0    50   ~ 0
+LED_2
+Text Label 8350 2450 0    50   ~ 0
+LED_3
+$Comp
+L power:+BATT #PWR027
+U 1 1 5C4CFECF
+P 8450 2850
+F 0 "#PWR027" H 8450 2700 50  0001 C CNN
+F 1 "+BATT" V 8465 2977 50  0000 L CNN
+F 2 "" H 8450 2850 50  0001 C CNN
+F 3 "" H 8450 2850 50  0001 C CNN
+	1    8450 2850
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR010
+U 1 1 5C4CFED5
+P 8450 1800
+F 0 "#PWR010" H 8450 1550 50  0001 C CNN
+F 1 "GND" V 8455 1672 50  0000 R CNN
+F 2 "" H 8450 1800 50  0001 C CNN
+F 3 "" H 8450 1800 50  0001 C CNN
+	1    8450 1800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8600 2950 8450 2950
+Wire Wire Line
+	8450 2950 8450 3000
+Wire Wire Line
+	8450 3000 8450 3050
+Wire Wire Line
+	8450 3050 8600 3050
+Connection ~ 8450 3000
+Wire Wire Line
+	8600 2850 8450 2850
+Wire Wire Line
+	8350 2750 8600 2750
+Wire Wire Line
+	8600 2650 8350 2650
+Wire Wire Line
+	8350 2550 8600 2550
+Wire Wire Line
+	8600 2450 8350 2450
+Wire Wire Line
+	8350 2350 8600 2350
+Wire Wire Line
+	8600 2250 8350 2250
+Wire Wire Line
+	8350 2150 8600 2150
+Wire Wire Line
+	8600 2050 8350 2050
+Wire Wire Line
+	8450 1950 8600 1950
+Wire Wire Line
+	8600 1850 8450 1850
+Wire Wire Line
+	8450 1850 8450 1800
+Wire Wire Line
+	8450 1800 8450 1750
+Wire Wire Line
+	8450 1750 8600 1750
+Connection ~ 8450 1800
+Text Label 4600 1900 2    50   ~ 0
+LED_0
+Text Label 4600 2000 2    50   ~ 0
+LED_1
+Text Label 4600 2100 2    50   ~ 0
+LED_2
+Text Label 4600 2200 2    50   ~ 0
+LED_3
+Wire Wire Line
+	12700 1650 12700 2000
+$Comp
+L Regulator_Linear:L78L18_SOT89 U2
+U 1 1 5C8D331F
+P 1350 2600
+F 0 "U2" H 1350 2842 50  0000 C CNN
+F 1 "XC6202P332PR-G" H 1350 2751 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-89-3" H 1350 2800 50  0001 C CIN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/15/55/e5/aa/23/5b/43/fd/CD00000446.pdf/files/CD00000446.pdf/jcr:content/translations/en.CD00000446.pdf" H 1350 2550 50  0001 C CNN
+	1    1350 2600
+	1    0    0    -1  
+$EndComp
+Text Notes 1750 2500 0    50   ~ 0
+3.3V\n150mA
+$Comp
+L Device:C C7
+U 1 1 5C93CE90
+P 13150 2950
+F 0 "C7" H 13265 2996 50  0000 L CNN
+F 1 "0.1u" H 13265 2905 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 13188 2800 50  0001 C CNN
+F 3 "~" H 13150 2950 50  0001 C CNN
+	1    13150 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	13150 3100 13150 3150
+$Comp
+L Device:C C6
+U 1 1 5C97155C
+P 11100 2900
+F 0 "C6" H 11215 2946 50  0000 L CNN
+F 1 "0.1u" H 11215 2855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 11138 2750 50  0001 C CNN
+F 3 "~" H 11100 2900 50  0001 C CNN
+	1    11100 2900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11450 2300 11450 2500
+Wire Wire Line
+	11100 2200 11450 2200
+Wire Wire Line
+	11100 2200 11100 2750
+Connection ~ 11450 2200
+Wire Wire Line
+	12800 2200 13150 2200
+Wire Wire Line
+	13150 2200 13150 2800
+Connection ~ 12800 2200
+$Comp
+L Connector_Generic:Conn_01x02 J12
+U 1 1 5CAADB4F
+P 10700 2200
+F 0 "J12" H 10620 2417 50  0000 C CNN
+F 1 "IN" H 10620 2326 50  0000 C CNN
+F 2 "Connector_JST:JST_EH_S02B-EH_1x02_P2.50mm_Horizontal" H 10700 2200 50  0001 C CNN
+F 3 "~" H 10700 2200 50  0001 C CNN
+	1    10700 2200
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J13
+U 1 1 5CAADD96
+P 13600 2200
+F 0 "J13" H 13520 2417 50  0000 C CNN
+F 1 "OUT" H 13520 2326 50  0000 C CNN
+F 2 "Connector_JST:JST_EH_S02B-EH_1x02_P2.50mm_Horizontal" H 13600 2200 50  0001 C CNN
+F 3 "~" H 13600 2200 50  0001 C CNN
+	1    13600 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10900 2200 11100 2200
+Connection ~ 11100 2200
+Wire Wire Line
+	13150 2200 13400 2200
+Connection ~ 13150 2200
+$Comp
+L power:GNDD #PWR0101
+U 1 1 5CB169C3
+P 10900 2300
+F 0 "#PWR0101" H 10900 2050 50  0001 C CNN
+F 1 "GNDD" H 10904 2145 50  0000 C CNN
+F 2 "" H 10900 2300 50  0001 C CNN
+F 3 "" H 10900 2300 50  0001 C CNN
+	1    10900 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0102
+U 1 1 5CB16A65
+P 13400 2300
+F 0 "#PWR0102" H 13400 2050 50  0001 C CNN
+F 1 "GNDD" H 13404 2145 50  0000 C CNN
+F 2 "" H 13400 2300 50  0001 C CNN
+F 3 "" H 13400 2300 50  0001 C CNN
+	1    13400 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0103
+U 1 1 5CB16B00
+P 12250 3150
+F 0 "#PWR0103" H 12250 2900 50  0001 C CNN
+F 1 "GNDD" H 12254 2995 50  0000 C CNN
+F 2 "" H 12250 3150 50  0001 C CNN
+F 3 "" H 12250 3150 50  0001 C CNN
+	1    12250 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0104
+U 1 1 5CB16E41
+P 12800 3150
+F 0 "#PWR0104" H 12800 2900 50  0001 C CNN
+F 1 "GNDD" H 12804 2995 50  0000 C CNN
+F 2 "" H 12800 3150 50  0001 C CNN
+F 3 "" H 12800 3150 50  0001 C CNN
+	1    12800 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0105
+U 1 1 5CB16EDC
+P 13150 3150
+F 0 "#PWR0105" H 13150 2900 50  0001 C CNN
+F 1 "GNDD" H 13154 2995 50  0000 C CNN
+F 2 "" H 13150 3150 50  0001 C CNN
+F 3 "" H 13150 3150 50  0001 C CNN
+	1    13150 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0106
+U 1 1 5CB170A2
+P 11450 3150
+F 0 "#PWR0106" H 11450 2900 50  0001 C CNN
+F 1 "GNDD" H 11454 2995 50  0000 C CNN
+F 2 "" H 11450 3150 50  0001 C CNN
+F 3 "" H 11450 3150 50  0001 C CNN
+	1    11450 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDD #PWR0107
+U 1 1 5CB1713D
+P 11100 3150
+F 0 "#PWR0107" H 11100 2900 50  0001 C CNN
+F 1 "GNDD" H 11104 2995 50  0000 C CNN
+F 2 "" H 11100 3150 50  0001 C CNN
+F 3 "" H 11100 3150 50  0001 C CNN
+	1    11100 3150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11100 3050 11100 3150
+$Comp
+L Device:C C5
+U 1 1 5CBE9287
+P 800 2800
+F 0 "C5" H 915 2846 50  0000 L CNN
+F 1 "1u" H 915 2755 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 838 2650 50  0001 C CNN
+F 3 "~" H 800 2800 50  0001 C CNN
+	1    800  2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0108
+U 1 1 5CBE928E
+P 800 3000
+F 0 "#PWR0108" H 800 2750 50  0001 C CNN
+F 1 "GND" H 805 2827 50  0000 C CNN
+F 2 "" H 800 3000 50  0001 C CNN
+F 3 "" H 800 3000 50  0001 C CNN
+	1    800  3000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	800  2950 800  3000
+$Comp
+L power:+3.3V #PWR0109
+U 1 1 5CBE9295
+P 2150 2550
+F 0 "#PWR0109" H 2150 2400 50  0001 C CNN
+F 1 "+3.3V" H 2165 2723 50  0000 C CNN
+F 2 "" H 2150 2550 50  0001 C CNN
+F 3 "" H 2150 2550 50  0001 C CNN
+	1    2150 2550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	800  2650 800  2600
+$Comp
+L power:+BATT #PWR0110
+U 1 1 5CDC50B0
+P 800 2550
+F 0 "#PWR0110" H 800 2400 50  0001 C CNN
+F 1 "+BATT" H 815 2723 50  0000 C CNN
+F 2 "" H 800 2550 50  0001 C CNN
+F 3 "" H 800 2550 50  0001 C CNN
+	1    800  2550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1050 2600 800  2600
+Connection ~ 800  2600
+Wire Wire Line
+	800  2600 800  2550
+Wire Wire Line
+	1650 2600 1750 2600
+Wire Wire Line
+	2150 2600 2150 2550
+Wire Wire Line
+	2150 2600 2150 2650
+Connection ~ 2150 2600
+Wire Wire Line
+	1750 2650 1750 2600
+Connection ~ 1750 2600
+Wire Wire Line
+	1750 2600 2150 2600
+Wire Wire Line
+	1350 2900 1350 3000
+$Comp
+L power:GND #PWR0111
+U 1 1 5CF0B176
+P 1750 3000
+F 0 "#PWR0111" H 1750 2750 50  0001 C CNN
+F 1 "GND" H 1755 2827 50  0000 C CNN
+F 2 "" H 1750 3000 50  0001 C CNN
+F 3 "" H 1750 3000 50  0001 C CNN
+	1    1750 3000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1750 2950 1750 3000
+$Comp
+L MCU_ST_STM32F0:STM32F042F6Px U1
+U 1 1 5CFB1833
+P 3600 2400
+F 0 "U1" H 3700 3100 50  0000 C CNN
+F 1 "STM32F042F6Px" H 3800 1650 50  0000 C CNN
+F 2 "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm" H 3100 1700 50  0001 R CNN
+F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00105814.pdf" H 3600 2400 50  0001 C CNN
+	1    3600 2400
+	1    0    0    -1  
+$EndComp
+NoConn ~ 2600 1900
+Wire Wire Line
+	4600 2700 4200 2700
+Wire Wire Line
+	4200 2800 4600 2800
+Wire Wire Line
+	4200 2200 4600 2200
+Wire Wire Line
+	4200 2100 4600 2100
+Wire Wire Line
+	4200 2000 4600 2000
+Wire Wire Line
+	4200 1900 4600 1900
+Wire Wire Line
+	3400 1700 3400 1650
+Wire Wire Line
+	3400 1650 3450 1650
+Wire Wire Line
+	3450 1650 3450 1600
+Wire Wire Line
+	3450 1650 3500 1650
+Wire Wire Line
+	3500 1650 3500 1700
+Connection ~ 3450 1650
+Wire Wire Line
+	12050 3000 12050 3050
+Wire Wire Line
+	12050 3050 12250 3050
+Wire Wire Line
+	12250 3050 12250 3000
+Connection ~ 12250 3050
+Wire Wire Line
+	12250 3050 12450 3050
+Wire Wire Line
+	12450 3050 12450 3000
+Wire Wire Line
+	3050 5100 3650 5100
+Connection ~ 3050 5100
+Wire Wire Line
+	3650 5100 4350 5100
+Connection ~ 3650 5100
+Wire Wire Line
+	2100 6600 2100 6500
+Wire Wire Line
+	2100 6500 2100 5400
+Wire Wire Line
+	2100 5300 1700 5300
+Connection ~ 2100 6500
+Wire Wire Line
+	1700 5400 2100 5400
+Connection ~ 2100 5400
+Wire Wire Line
+	2100 5400 2100 5300
+Connection ~ 2100 6600
+Wire Wire Line
+	2100 7500 2100 6600
+Connection ~ 3050 7500
+Wire Wire Line
+	3050 7450 3050 7500
+Wire Wire Line
+	3050 7500 3650 7500
+Wire Wire Line
+	4350 7500 3650 7500
+Connection ~ 3650 7500
+Wire Wire Line
+	3650 7500 3650 7450
+Wire Wire Line
+	2450 7500 2100 7500
+Wire Wire Line
+	3050 7500 2450 7500
+Connection ~ 2450 7500
+Wire Wire Line
+	2450 7450 2450 7500
+$Comp
+L user_library:S6812Side D12
+U 1 1 5C2EF07F
+P 3650 7150
+F 0 "D12" H 3700 7400 50  0000 L CNN
+F 1 "S6812Side" H 3700 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3700 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3750 6775 50  0001 L TNN
+	1    3650 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D11
+U 1 1 5C2EF078
+P 3050 7150
+F 0 "D11" H 3100 7400 50  0000 L CNN
+F 1 "S6812Side" H 3100 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 3100 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 3150 6775 50  0001 L TNN
+	1    3050 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D10
+U 1 1 5C2EF071
+P 2450 7150
+F 0 "D10" H 2500 7400 50  0000 L CNN
+F 1 "S6812Side" H 2500 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 2500 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 2550 6775 50  0001 L TNN
+	1    2450 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4350 5100 4350 5900
+Wire Wire Line
+	2450 5850 2450 5900
+Wire Wire Line
+	2450 5900 3050 5900
+Connection ~ 4350 5900
+Wire Wire Line
+	4350 5900 4350 6700
+Wire Wire Line
+	3050 5850 3050 5900
+Connection ~ 3050 5900
+Wire Wire Line
+	3050 5900 3650 5900
+Wire Wire Line
+	3650 5850 3650 5900
+Connection ~ 3650 5900
+Wire Wire Line
+	3650 5900 4350 5900
+Wire Wire Line
+	2450 6650 2450 6700
+Wire Wire Line
+	2450 6700 3050 6700
+Connection ~ 4350 6700
+Wire Wire Line
+	4350 6700 4350 7500
+Wire Wire Line
+	3650 6650 3650 6700
+Connection ~ 3650 6700
+Wire Wire Line
+	3650 6700 4350 6700
+Wire Wire Line
+	3050 6650 3050 6700
+Connection ~ 3050 6700
+Wire Wire Line
+	3050 6700 3650 6700
+Wire Wire Line
+	2450 5200 2050 5200
+Connection ~ 2450 5200
+Connection ~ 2050 5200
+Wire Wire Line
+	2050 5200 2050 4400
+Wire Wire Line
+	2450 6000 2050 6000
+Connection ~ 2450 6000
+Connection ~ 2050 6000
+Wire Wire Line
+	1950 5800 1950 6350
+Wire Wire Line
+	1850 5900 1850 7150
+Wire Wire Line
+	2050 6000 2050 5500
+Wire Wire Line
+	1850 5900 1700 5900
+Wire Wire Line
+	1700 5600 1900 5600
+Wire Wire Line
+	1950 5800 1700 5800
+Wire Wire Line
+	1700 5700 2000 5700
+$Comp
+L Connector:Conn_01x14_Male J6
+U 1 1 5D9BA6E0
+P 4600 5900
+F 0 "J6" H 4706 6678 50  0000 C CNN
+F 1 "LED_L" H 4706 6587 50  0000 C CNN
+F 2 "LED_Frame:LED_Frame" H 4600 5900 50  0001 C CNN
+F 3 "~" H 4600 5900 50  0001 C CNN
+	1    4600 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D13
+U 1 1 5D9BA6E7
+P 5550 4750
+F 0 "D13" H 5600 5000 50  0000 L CNN
+F 1 "S6812Side" H 5600 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 5600 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 5650 4375 50  0001 L TNN
+	1    5550 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D14
+U 1 1 5D9BA6EE
+P 6150 4750
+F 0 "D14" H 6200 5000 50  0000 L CNN
+F 1 "S6812Side" H 6200 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6200 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6250 4375 50  0001 L TNN
+	1    6150 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D15
+U 1 1 5D9BA6F5
+P 6750 4750
+F 0 "D15" H 6800 5000 50  0000 L CNN
+F 1 "S6812Side" H 6800 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6800 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6850 4375 50  0001 L TNN
+	1    6750 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 5050 5550 5100
+Wire Wire Line
+	5550 5100 6150 5100
+Wire Wire Line
+	6750 5100 6750 5050
+Wire Wire Line
+	6150 5050 6150 5100
+Wire Wire Line
+	6750 4450 6750 4400
+Wire Wire Line
+	6750 4400 6150 4400
+Wire Wire Line
+	5550 4400 5550 4450
+Wire Wire Line
+	6150 4450 6150 4400
+Connection ~ 6150 4400
+Wire Wire Line
+	6150 4400 5550 4400
+$Comp
+L user_library:S6812Side D16
+U 1 1 5D9BA706
+P 5550 5550
+F 0 "D16" H 5600 5800 50  0000 L CNN
+F 1 "S6812Side" H 5600 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 5600 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 5650 5175 50  0001 L TNN
+	1    5550 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D17
+U 1 1 5D9BA70D
+P 6150 5550
+F 0 "D17" H 6200 5800 50  0000 L CNN
+F 1 "S6812Side" H 6200 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6200 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6250 5175 50  0001 L TNN
+	1    6150 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D18
+U 1 1 5D9BA714
+P 6750 5550
+F 0 "D18" H 6800 5800 50  0000 L CNN
+F 1 "S6812Side" H 6800 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6800 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6850 5175 50  0001 L TNN
+	1    6750 5550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6750 5250 6750 5200
+Wire Wire Line
+	6750 5200 6150 5200
+Wire Wire Line
+	5550 5200 5550 5250
+Wire Wire Line
+	6150 5250 6150 5200
+Connection ~ 6150 5200
+Wire Wire Line
+	6150 5200 5550 5200
+$Comp
+L user_library:S6812Side D19
+U 1 1 5D9BA721
+P 5550 6350
+F 0 "D19" H 5600 6600 50  0000 L CNN
+F 1 "S6812Side" H 5600 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 5600 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 5650 5975 50  0001 L TNN
+	1    5550 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D20
+U 1 1 5D9BA728
+P 6150 6350
+F 0 "D20" H 6200 6600 50  0000 L CNN
+F 1 "S6812Side" H 6200 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6200 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6250 5975 50  0001 L TNN
+	1    6150 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D21
+U 1 1 5D9BA72F
+P 6750 6350
+F 0 "D21" H 6800 6600 50  0000 L CNN
+F 1 "S6812Side" H 6800 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6800 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6850 5975 50  0001 L TNN
+	1    6750 6350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6750 6050 6750 6000
+Wire Wire Line
+	6750 6000 6150 6000
+Wire Wire Line
+	5550 6000 5550 6050
+Wire Wire Line
+	6150 6050 6150 6000
+Connection ~ 6150 6000
+Wire Wire Line
+	6150 6000 5550 6000
+Wire Wire Line
+	6750 6850 6750 6800
+Wire Wire Line
+	6750 6800 6150 6800
+Wire Wire Line
+	5550 6800 5550 6850
+Wire Wire Line
+	6150 6850 6150 6800
+Connection ~ 6150 6800
+Wire Wire Line
+	6150 6800 5550 6800
+Wire Wire Line
+	5550 6800 5150 6800
+Wire Wire Line
+	5150 6800 5150 6400
+Wire Wire Line
+	5150 4400 5550 4400
+Connection ~ 5550 6800
+Connection ~ 5550 4400
+Wire Wire Line
+	4800 6500 5200 6500
+Wire Wire Line
+	4800 6600 5200 6600
+Wire Wire Line
+	4800 6400 5150 6400
+Connection ~ 5150 6400
+Wire Wire Line
+	5150 6400 5150 6000
+Wire Wire Line
+	4800 5500 5150 5500
+Connection ~ 5150 5500
+Wire Wire Line
+	5150 5500 5150 5200
+Wire Wire Line
+	5250 5550 5100 5550
+Wire Wire Line
+	5100 5550 5100 5700
+Wire Wire Line
+	4800 5700 5100 5700
+Wire Wire Line
+	5250 6350 5050 6350
+Wire Wire Line
+	5050 5800 4800 5800
+Wire Wire Line
+	5250 4750 5000 4750
+Wire Wire Line
+	5000 4750 5000 5600
+Wire Wire Line
+	4800 5600 5000 5600
+Wire Wire Line
+	4950 5900 4800 5900
+Wire Wire Line
+	4950 7150 5250 7150
+Wire Wire Line
+	6150 5100 6750 5100
+Connection ~ 6150 5100
+Wire Wire Line
+	6750 5100 7450 5100
+Connection ~ 6750 5100
+Wire Wire Line
+	5200 6600 5200 6500
+Wire Wire Line
+	5200 6500 5200 5400
+Wire Wire Line
+	5200 5300 4800 5300
+Connection ~ 5200 6500
+Wire Wire Line
+	4800 5400 5200 5400
+Connection ~ 5200 5400
+Wire Wire Line
+	5200 5400 5200 5300
+Connection ~ 5200 6600
+Wire Wire Line
+	5200 7500 5200 6600
+Connection ~ 6150 7500
+Wire Wire Line
+	6150 7450 6150 7500
+Wire Wire Line
+	6150 7500 6750 7500
+Wire Wire Line
+	7450 7500 6750 7500
+Connection ~ 6750 7500
+Wire Wire Line
+	6750 7500 6750 7450
+Wire Wire Line
+	5550 7500 5200 7500
+Wire Wire Line
+	6150 7500 5550 7500
+Connection ~ 5550 7500
+Wire Wire Line
+	5550 7450 5550 7500
+$Comp
+L user_library:S6812Side D24
+U 1 1 5D9BA770
+P 6750 7150
+F 0 "D24" H 6800 7400 50  0000 L CNN
+F 1 "S6812Side" H 6800 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6800 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6850 6775 50  0001 L TNN
+	1    6750 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D23
+U 1 1 5D9BA777
+P 6150 7150
+F 0 "D23" H 6200 7400 50  0000 L CNN
+F 1 "S6812Side" H 6200 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 6200 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 6250 6775 50  0001 L TNN
+	1    6150 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D22
+U 1 1 5D9BA77E
+P 5550 7150
+F 0 "D22" H 5600 7400 50  0000 L CNN
+F 1 "S6812Side" H 5600 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 5600 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 5650 6775 50  0001 L TNN
+	1    5550 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7450 5100 7450 5900
+Wire Wire Line
+	5550 5850 5550 5900
+Wire Wire Line
+	5550 5900 6150 5900
+Connection ~ 7450 5900
+Wire Wire Line
+	7450 5900 7450 6700
+Wire Wire Line
+	6150 5850 6150 5900
+Connection ~ 6150 5900
+Wire Wire Line
+	6150 5900 6750 5900
+Wire Wire Line
+	6750 5850 6750 5900
+Connection ~ 6750 5900
+Wire Wire Line
+	6750 5900 7450 5900
+Wire Wire Line
+	5550 6650 5550 6700
+Wire Wire Line
+	5550 6700 6150 6700
+Connection ~ 7450 6700
+Wire Wire Line
+	7450 6700 7450 7500
+Wire Wire Line
+	6750 6650 6750 6700
+Connection ~ 6750 6700
+Wire Wire Line
+	6750 6700 7450 6700
+Wire Wire Line
+	6150 6650 6150 6700
+Connection ~ 6150 6700
+Wire Wire Line
+	6150 6700 6750 6700
+Wire Wire Line
+	5550 5200 5150 5200
+Connection ~ 5550 5200
+Connection ~ 5150 5200
+Wire Wire Line
+	5150 5200 5150 4400
+Wire Wire Line
+	5550 6000 5150 6000
+Connection ~ 5550 6000
+Connection ~ 5150 6000
+Wire Wire Line
+	5150 6000 5150 5500
+Wire Wire Line
+	5050 5800 5050 6350
+Wire Wire Line
+	4950 5900 4950 7150
+$Comp
+L Connector:Conn_01x14_Male J7
+U 1 1 5BF9F00A
+P 7700 5900
+F 0 "J7" H 7806 6678 50  0000 C CNN
+F 1 "LED_L" H 7806 6587 50  0000 C CNN
+F 2 "LED_Frame:LED_Frame" H 7700 5900 50  0001 C CNN
+F 3 "~" H 7700 5900 50  0001 C CNN
+	1    7700 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D25
+U 1 1 5BF9F011
+P 8650 4750
+F 0 "D25" H 8700 5000 50  0000 L CNN
+F 1 "S6812Side" H 8700 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 8700 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 8750 4375 50  0001 L TNN
+	1    8650 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D26
+U 1 1 5BF9F018
+P 9250 4750
+F 0 "D26" H 9300 5000 50  0000 L CNN
+F 1 "S6812Side" H 9300 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9300 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9350 4375 50  0001 L TNN
+	1    9250 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D27
+U 1 1 5BF9F01F
+P 9850 4750
+F 0 "D27" H 9900 5000 50  0000 L CNN
+F 1 "S6812Side" H 9900 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9900 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9950 4375 50  0001 L TNN
+	1    9850 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8650 5050 8650 5100
+Wire Wire Line
+	8650 5100 9250 5100
+Wire Wire Line
+	9850 5100 9850 5050
+Wire Wire Line
+	9250 5050 9250 5100
+Wire Wire Line
+	9850 4450 9850 4400
+Wire Wire Line
+	9850 4400 9250 4400
+Wire Wire Line
+	8650 4400 8650 4450
+Wire Wire Line
+	9250 4450 9250 4400
+Connection ~ 9250 4400
+Wire Wire Line
+	9250 4400 8650 4400
+$Comp
+L user_library:S6812Side D28
+U 1 1 5BF9F030
+P 8650 5550
+F 0 "D28" H 8700 5800 50  0000 L CNN
+F 1 "S6812Side" H 8700 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 8700 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 8750 5175 50  0001 L TNN
+	1    8650 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D29
+U 1 1 5BF9F037
+P 9250 5550
+F 0 "D29" H 9300 5800 50  0000 L CNN
+F 1 "S6812Side" H 9300 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9300 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9350 5175 50  0001 L TNN
+	1    9250 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D30
+U 1 1 5BF9F03E
+P 9850 5550
+F 0 "D30" H 9900 5800 50  0000 L CNN
+F 1 "S6812Side" H 9900 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9900 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9950 5175 50  0001 L TNN
+	1    9850 5550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9850 5250 9850 5200
+Wire Wire Line
+	9850 5200 9250 5200
+Wire Wire Line
+	8650 5200 8650 5250
+Wire Wire Line
+	9250 5250 9250 5200
+Connection ~ 9250 5200
+Wire Wire Line
+	9250 5200 8650 5200
+$Comp
+L user_library:S6812Side D31
+U 1 1 5BF9F04B
+P 8650 6350
+F 0 "D31" H 8700 6600 50  0000 L CNN
+F 1 "S6812Side" H 8700 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 8700 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 8750 5975 50  0001 L TNN
+	1    8650 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D32
+U 1 1 5BF9F052
+P 9250 6350
+F 0 "D32" H 9300 6600 50  0000 L CNN
+F 1 "S6812Side" H 9300 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9300 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9350 5975 50  0001 L TNN
+	1    9250 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D33
+U 1 1 5BF9F059
+P 9850 6350
+F 0 "D33" H 9900 6600 50  0000 L CNN
+F 1 "S6812Side" H 9900 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9900 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9950 5975 50  0001 L TNN
+	1    9850 6350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9850 6050 9850 6000
+Wire Wire Line
+	9850 6000 9250 6000
+Wire Wire Line
+	8650 6000 8650 6050
+Wire Wire Line
+	9250 6050 9250 6000
+Connection ~ 9250 6000
+Wire Wire Line
+	9250 6000 8650 6000
+Wire Wire Line
+	9850 6850 9850 6800
+Wire Wire Line
+	9850 6800 9250 6800
+Wire Wire Line
+	8650 6800 8650 6850
+Wire Wire Line
+	9250 6850 9250 6800
+Connection ~ 9250 6800
+Wire Wire Line
+	9250 6800 8650 6800
+Wire Wire Line
+	8650 6800 8250 6800
+Wire Wire Line
+	8250 6800 8250 6400
+Wire Wire Line
+	8250 4400 8650 4400
+Connection ~ 8650 6800
+Connection ~ 8650 4400
+Wire Wire Line
+	7900 6500 8300 6500
+Wire Wire Line
+	7900 6600 8300 6600
+Wire Wire Line
+	7900 6400 8250 6400
+Connection ~ 8250 6400
+Wire Wire Line
+	8250 6400 8250 6000
+Wire Wire Line
+	7900 5500 8250 5500
+Connection ~ 8250 5500
+Wire Wire Line
+	8250 5500 8250 5200
+Wire Wire Line
+	8350 5550 8200 5550
+Wire Wire Line
+	8200 5550 8200 5700
+Wire Wire Line
+	7900 5700 8200 5700
+Wire Wire Line
+	8350 6350 8150 6350
+Wire Wire Line
+	8150 5800 7900 5800
+Wire Wire Line
+	8350 4750 8100 4750
+Wire Wire Line
+	8100 4750 8100 5600
+Wire Wire Line
+	7900 5600 8100 5600
+Wire Wire Line
+	8050 5900 7900 5900
+Wire Wire Line
+	8050 7150 8350 7150
+Wire Wire Line
+	9250 5100 9850 5100
+Connection ~ 9250 5100
+Wire Wire Line
+	9850 5100 10550 5100
+Connection ~ 9850 5100
+Wire Wire Line
+	8300 6600 8300 6500
+Wire Wire Line
+	8300 6500 8300 5400
+Wire Wire Line
+	8300 5300 7900 5300
+Connection ~ 8300 6500
+Wire Wire Line
+	7900 5400 8300 5400
+Connection ~ 8300 5400
+Wire Wire Line
+	8300 5400 8300 5300
+Connection ~ 8300 6600
+Wire Wire Line
+	8300 7500 8300 6600
+Connection ~ 9250 7500
+Wire Wire Line
+	9250 7450 9250 7500
+Wire Wire Line
+	9250 7500 9850 7500
+Wire Wire Line
+	10550 7500 9850 7500
+Connection ~ 9850 7500
+Wire Wire Line
+	9850 7500 9850 7450
+Wire Wire Line
+	8650 7500 8300 7500
+Wire Wire Line
+	9250 7500 8650 7500
+Connection ~ 8650 7500
+Wire Wire Line
+	8650 7450 8650 7500
+$Comp
+L user_library:S6812Side D36
+U 1 1 5BF9F09A
+P 9850 7150
+F 0 "D36" H 9900 7400 50  0000 L CNN
+F 1 "S6812Side" H 9900 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9900 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9950 6775 50  0001 L TNN
+	1    9850 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D35
+U 1 1 5BF9F0A1
+P 9250 7150
+F 0 "D35" H 9300 7400 50  0000 L CNN
+F 1 "S6812Side" H 9300 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 9300 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 9350 6775 50  0001 L TNN
+	1    9250 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D34
+U 1 1 5BF9F0A8
+P 8650 7150
+F 0 "D34" H 8700 7400 50  0000 L CNN
+F 1 "S6812Side" H 8700 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 8700 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 8750 6775 50  0001 L TNN
+	1    8650 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10550 5100 10550 5900
+Wire Wire Line
+	8650 5850 8650 5900
+Wire Wire Line
+	8650 5900 9250 5900
+Connection ~ 10550 5900
+Wire Wire Line
+	10550 5900 10550 6700
+Wire Wire Line
+	9250 5850 9250 5900
+Connection ~ 9250 5900
+Wire Wire Line
+	9250 5900 9850 5900
+Wire Wire Line
+	9850 5850 9850 5900
+Connection ~ 9850 5900
+Wire Wire Line
+	9850 5900 10550 5900
+Wire Wire Line
+	8650 6650 8650 6700
+Wire Wire Line
+	8650 6700 9250 6700
+Connection ~ 10550 6700
+Wire Wire Line
+	10550 6700 10550 7500
+Wire Wire Line
+	9850 6650 9850 6700
+Connection ~ 9850 6700
+Wire Wire Line
+	9850 6700 10550 6700
+Wire Wire Line
+	9250 6650 9250 6700
+Connection ~ 9250 6700
+Wire Wire Line
+	9250 6700 9850 6700
+Wire Wire Line
+	8650 5200 8250 5200
+Connection ~ 8650 5200
+Connection ~ 8250 5200
+Wire Wire Line
+	8250 5200 8250 4400
+Wire Wire Line
+	8650 6000 8250 6000
+Connection ~ 8650 6000
+Connection ~ 8250 6000
+Wire Wire Line
+	8250 6000 8250 5500
+Wire Wire Line
+	8150 5800 8150 6350
+Wire Wire Line
+	8050 5900 8050 7150
+$Comp
+L Connector:Conn_01x14_Male J8
+U 1 1 5BFCADC0
+P 10750 5900
+F 0 "J8" H 10856 6678 50  0000 C CNN
+F 1 "LED_L" H 10856 6587 50  0000 C CNN
+F 2 "LED_Frame:LED_Frame" H 10750 5900 50  0001 C CNN
+F 3 "~" H 10750 5900 50  0001 C CNN
+	1    10750 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D37
+U 1 1 5BFCADC7
+P 11700 4750
+F 0 "D37" H 11750 5000 50  0000 L CNN
+F 1 "S6812Side" H 11750 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 11750 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 11800 4375 50  0001 L TNN
+	1    11700 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D38
+U 1 1 5BFCADCE
+P 12300 4750
+F 0 "D38" H 12350 5000 50  0000 L CNN
+F 1 "S6812Side" H 12350 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12350 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 12400 4375 50  0001 L TNN
+	1    12300 4750
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D39
+U 1 1 5BFCADD5
+P 12900 4750
+F 0 "D39" H 12950 5000 50  0000 L CNN
+F 1 "S6812Side" H 12950 4500 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12950 4450 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 13000 4375 50  0001 L TNN
+	1    12900 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11700 5050 11700 5100
+Wire Wire Line
+	11700 5100 12300 5100
+Wire Wire Line
+	12900 5100 12900 5050
+Wire Wire Line
+	12300 5050 12300 5100
+Wire Wire Line
+	12900 4450 12900 4400
+Wire Wire Line
+	12900 4400 12300 4400
+Wire Wire Line
+	11700 4400 11700 4450
+Wire Wire Line
+	12300 4450 12300 4400
+Connection ~ 12300 4400
+Wire Wire Line
+	12300 4400 11700 4400
+$Comp
+L user_library:S6812Side D40
+U 1 1 5BFCADE6
+P 11700 5550
+F 0 "D40" H 11750 5800 50  0000 L CNN
+F 1 "S6812Side" H 11750 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 11750 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 11800 5175 50  0001 L TNN
+	1    11700 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D41
+U 1 1 5BFCADED
+P 12300 5550
+F 0 "D41" H 12350 5800 50  0000 L CNN
+F 1 "S6812Side" H 12350 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12350 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 12400 5175 50  0001 L TNN
+	1    12300 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D42
+U 1 1 5BFCADF4
+P 12900 5550
+F 0 "D42" H 12950 5800 50  0000 L CNN
+F 1 "S6812Side" H 12950 5300 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12950 5250 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 13000 5175 50  0001 L TNN
+	1    12900 5550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12900 5250 12900 5200
+Wire Wire Line
+	12900 5200 12300 5200
+Wire Wire Line
+	11700 5200 11700 5250
+Wire Wire Line
+	12300 5250 12300 5200
+Connection ~ 12300 5200
+Wire Wire Line
+	12300 5200 11700 5200
+$Comp
+L user_library:S6812Side D43
+U 1 1 5BFCAE01
+P 11700 6350
+F 0 "D43" H 11750 6600 50  0000 L CNN
+F 1 "S6812Side" H 11750 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 11750 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 11800 5975 50  0001 L TNN
+	1    11700 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D44
+U 1 1 5BFCAE08
+P 12300 6350
+F 0 "D44" H 12350 6600 50  0000 L CNN
+F 1 "S6812Side" H 12350 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12350 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 12400 5975 50  0001 L TNN
+	1    12300 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D45
+U 1 1 5BFCAE0F
+P 12900 6350
+F 0 "D45" H 12950 6600 50  0000 L CNN
+F 1 "S6812Side" H 12950 6100 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12950 6050 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 13000 5975 50  0001 L TNN
+	1    12900 6350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12900 6050 12900 6000
+Wire Wire Line
+	12900 6000 12300 6000
+Wire Wire Line
+	11700 6000 11700 6050
+Wire Wire Line
+	12300 6050 12300 6000
+Connection ~ 12300 6000
+Wire Wire Line
+	12300 6000 11700 6000
+Wire Wire Line
+	12900 6850 12900 6800
+Wire Wire Line
+	12900 6800 12300 6800
+Wire Wire Line
+	11700 6800 11700 6850
+Wire Wire Line
+	12300 6850 12300 6800
+Connection ~ 12300 6800
+Wire Wire Line
+	12300 6800 11700 6800
+Wire Wire Line
+	11700 6800 11300 6800
+Wire Wire Line
+	11300 6800 11300 6400
+Wire Wire Line
+	11300 4400 11700 4400
+Connection ~ 11700 6800
+Connection ~ 11700 4400
+Wire Wire Line
+	10950 6500 11350 6500
+Wire Wire Line
+	10950 6600 11350 6600
+Wire Wire Line
+	10950 6400 11300 6400
+Connection ~ 11300 6400
+Wire Wire Line
+	11300 6400 11300 6000
+Wire Wire Line
+	10950 5500 11300 5500
+Connection ~ 11300 5500
+Wire Wire Line
+	11300 5500 11300 5200
+Wire Wire Line
+	11400 5550 11250 5550
+Wire Wire Line
+	11250 5550 11250 5700
+Wire Wire Line
+	10950 5700 11250 5700
+Wire Wire Line
+	11400 6350 11200 6350
+Wire Wire Line
+	11200 5800 10950 5800
+Wire Wire Line
+	11400 4750 11150 4750
+Wire Wire Line
+	11150 4750 11150 5600
+Wire Wire Line
+	10950 5600 11150 5600
+Wire Wire Line
+	11100 5900 10950 5900
+Wire Wire Line
+	11100 7150 11400 7150
+Wire Wire Line
+	12300 5100 12900 5100
+Connection ~ 12300 5100
+Wire Wire Line
+	12900 5100 13600 5100
+Connection ~ 12900 5100
+Wire Wire Line
+	11350 6600 11350 6500
+Wire Wire Line
+	11350 6500 11350 5400
+Wire Wire Line
+	11350 5300 10950 5300
+Connection ~ 11350 6500
+Wire Wire Line
+	10950 5400 11350 5400
+Connection ~ 11350 5400
+Wire Wire Line
+	11350 5400 11350 5300
+Connection ~ 11350 6600
+Wire Wire Line
+	11350 7500 11350 6600
+Connection ~ 12300 7500
+Wire Wire Line
+	12300 7450 12300 7500
+Wire Wire Line
+	12300 7500 12900 7500
+Wire Wire Line
+	13600 7500 12900 7500
+Connection ~ 12900 7500
+Wire Wire Line
+	12900 7500 12900 7450
+Wire Wire Line
+	11700 7500 11350 7500
+Wire Wire Line
+	12300 7500 11700 7500
+Connection ~ 11700 7500
+Wire Wire Line
+	11700 7450 11700 7500
+$Comp
+L user_library:S6812Side D48
+U 1 1 5BFCAE50
+P 12900 7150
+F 0 "D48" H 12950 7400 50  0000 L CNN
+F 1 "S6812Side" H 12950 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12950 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 13000 6775 50  0001 L TNN
+	1    12900 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D47
+U 1 1 5BFCAE57
+P 12300 7150
+F 0 "D47" H 12350 7400 50  0000 L CNN
+F 1 "S6812Side" H 12350 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 12350 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 12400 6775 50  0001 L TNN
+	1    12300 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L user_library:S6812Side D46
+U 1 1 5BFCAE5E
+P 11700 7150
+F 0 "D46" H 11750 7400 50  0000 L CNN
+F 1 "S6812Side" H 11750 6900 50  0000 L CNN
+F 2 "user:S6812Side_top" H 11750 6850 50  0001 L TNN
+F 3 "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf" H 11800 6775 50  0001 L TNN
+	1    11700 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	13600 5100 13600 5900
+Wire Wire Line
+	11700 5850 11700 5900
+Wire Wire Line
+	11700 5900 12300 5900
+Connection ~ 13600 5900
+Wire Wire Line
+	13600 5900 13600 6700
+Wire Wire Line
+	12300 5850 12300 5900
+Connection ~ 12300 5900
+Wire Wire Line
+	12300 5900 12900 5900
+Wire Wire Line
+	12900 5850 12900 5900
+Connection ~ 12900 5900
+Wire Wire Line
+	12900 5900 13600 5900
+Wire Wire Line
+	11700 6650 11700 6700
+Wire Wire Line
+	11700 6700 12300 6700
+Connection ~ 13600 6700
+Wire Wire Line
+	13600 6700 13600 7500
+Wire Wire Line
+	12900 6650 12900 6700
+Connection ~ 12900 6700
+Wire Wire Line
+	12900 6700 13600 6700
+Wire Wire Line
+	12300 6650 12300 6700
+Connection ~ 12300 6700
+Wire Wire Line
+	12300 6700 12900 6700
+Wire Wire Line
+	11700 5200 11300 5200
+Connection ~ 11700 5200
+Connection ~ 11300 5200
+Wire Wire Line
+	11300 5200 11300 4400
+Wire Wire Line
+	11700 6000 11300 6000
+Connection ~ 11700 6000
+Connection ~ 11300 6000
+Wire Wire Line
+	11300 6000 11300 5500
+Wire Wire Line
+	11200 5800 11200 6350
+Wire Wire Line
+	11100 5900 11100 7150
+$EndSCHEMATC

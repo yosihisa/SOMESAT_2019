@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name LED_Frame)(type KiCad)(uri ${KIPRJMOD}/LED_Frame.pretty)(options "")(descr ""))
+  (lib (name LED_hachune)(type KiCad)(uri D:/Programming/SOMESAT/SOMESAT_2019/PCB/LED_hachune)(options "")(descr ""))
+)
