@@ -131,21 +131,6 @@ int main(void)
 
   led_hachune_t hachune[3];
 
-  hachune[0].led[0] = get_color(0x00fa9a);
-  hachune[0].led[1] = get_color(0x00FF00);
-  hachune[0].led[2] = get_color(0x000000);
-  hachune[0].led[3] = get_color(0x000000);
-
-  hachune[1].led[0] = get_color(0x00fa9a);
-  hachune[1].led[1] = get_color(0x000000);
-  hachune[1].led[2] = get_color(0x00FF00);
-  hachune[1].led[3] = get_color(0x000000);
-
-  hachune[2].led[0] = get_color(0x00fa9a);
-  hachune[2].led[1] = get_color(0x000000);
-  hachune[2].led[2] = get_color(0x000000);
-  hachune[2].led[3] = get_color(0x00FF00);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -155,14 +140,82 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	led_hachune(&hachune[0]);
-	HAL_Delay(500);
-	led_hachune(&hachune[1]);
-	HAL_Delay(500);
-	led_hachune(&hachune[2]);
-	HAL_Delay(500);
-	led_hachune(&hachune[1]);
-	HAL_Delay(500);
+
+	//うるさいやつ
+	for(int i=0;i<360*5;i++){
+		hachune[0].led[0] = get_hsv(i%360,255,255);
+		hachune[0].led[1] = get_hsv((i+30)%360,255,255);
+		hachune[0].led[2] = get_color(0x000000);
+		hachune[0].led[3] = get_color(0x000000);
+
+		hachune[1].led[0] = get_hsv(i%360,255,255);
+		hachune[1].led[1] = get_color(0x000000);
+		hachune[1].led[2] = get_hsv((i+30)%360,255,255);
+		hachune[1].led[3] = get_color(0x000000);
+
+		hachune[2].led[0] = get_hsv(i%360,255,255);
+		hachune[2].led[1] = get_color(0x000000);
+		hachune[2].led[2] = get_color(0x000000);
+		hachune[2].led[3] = get_hsv((i+30)%360,255,255);
+
+		led_hachune(&hachune[(i/45)%4 != 3 ? (i/45)%4 : 1 ]);
+
+		HAL_Delay(6);
+	}
+
+	//Y配色
+	hachune[0].led[0] = get_color(0x00fa9a);
+	hachune[0].led[1] = get_color(0x00FF00);
+	hachune[0].led[2] = get_color(0x000000);
+	hachune[0].led[3] = get_color(0x000000);
+
+	hachune[1].led[0] = get_color(0x00fa9a);
+	hachune[1].led[1] = get_color(0x000000);
+	hachune[1].led[2] = get_color(0x00FF00);
+	hachune[1].led[3] = get_color(0x000000);
+
+	hachune[2].led[0] = get_color(0x00fa9a);
+	hachune[2].led[1] = get_color(0x000000);
+	hachune[2].led[2] = get_color(0x000000);
+	hachune[2].led[3] = get_color(0x00FF00);
+
+	for(int i=0;i<10;i++){
+		led_hachune(&hachune[0]);
+		HAL_Delay(300);
+		led_hachune(&hachune[1]);
+		HAL_Delay(300);
+		led_hachune(&hachune[2]);
+		HAL_Delay(300);
+		led_hachune(&hachune[1]);
+		HAL_Delay(300);
+	}
+
+	//R配色
+	hachune[0].led[0] = get_color(0x4DFFE4);
+	hachune[0].led[1] = get_color(0x89FF42);
+	hachune[0].led[2] = get_color(0x000000);
+	hachune[0].led[3] = get_color(0x000000);
+
+	hachune[1].led[0] = get_color(0x4DFFE4);
+	hachune[1].led[1] = get_color(0x000000);
+	hachune[1].led[2] = get_color(0x89FF42);
+	hachune[1].led[3] = get_color(0x000000);
+
+	hachune[2].led[0] = get_color(0x4DFFE4);
+	hachune[2].led[1] = get_color(0x000000);
+	hachune[2].led[2] = get_color(0x000000);
+	hachune[2].led[3] = get_color(0x89FF42);
+
+	for(int i=0;i<10;i++){
+		led_hachune(&hachune[0]);
+		HAL_Delay(300);
+		led_hachune(&hachune[1]);
+		HAL_Delay(300);
+		led_hachune(&hachune[2]);
+		HAL_Delay(300);
+		led_hachune(&hachune[1]);
+		HAL_Delay(300);
+	}
 
   }
   /* USER CODE END 3 */
