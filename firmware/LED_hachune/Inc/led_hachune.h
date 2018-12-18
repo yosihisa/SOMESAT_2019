@@ -19,5 +19,6 @@ typedef struct {
 void led_hachune(led_hachune_t *data);
 
 rgb get_color(uint32_t);
+rgb get_hsv(float h ,float s,float v);
 
 #endif /* LED_HACHUNE_H_ */

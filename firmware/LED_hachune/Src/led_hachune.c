@@ -238,3 +238,47 @@ rgb get_color(const uint32_t data){
 	color.blue  = (data & 0x0000FF);
 	return color;
 }
+
+
+rgb get_hsv(float h ,float s,float v){
+	float max = v;
+	float min = max - ((s/255)* max);
+	float red,grean,blue;
+	rgb color;
+	if( h>=0 && h<60 ){
+		red   = max;
+		grean = (h/60) * (max-min) + min;
+		blue  = min;
+	}
+	if( h>=60 && h<120 ){
+		red   = ((120-h)/60)*(max-min)+min;
+		grean = max;
+		blue  = min;
+	}
+	if( h>=120 && h<180 ){
+		red   = min;
+		grean = max;
+		blue  = ((h-120)/60)*(max-min)+min;
+	}
+	if( h>=180 && h<240 ){
+		red   = min;
+		grean = ((240-h)/60) * (max-min) + min;
+		blue  = max;
+	}
+	if( h>=240 && h<300 ){
+		red   = ((h-240)/60) * (max-min) + min;
+		grean = min;
+		blue  = max;
+	}
+	if( h>=300 && h<360 ){
+		red   = max;
+		grean = min;
+		blue  = ((360-h)/60) * (max-min) + min;
+	}
+
+	color.grean = grean;
+	color.red = red;
+	color.blue = blue;
+
+	return color;
+}
