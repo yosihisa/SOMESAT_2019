@@ -9,7 +9,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2018 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -318,9 +318,10 @@ uint8_t BSP_SD_IsDetected(void)
 {
   __IO uint8_t status = SD_PRESENT;
 
-  /* USER CODE BEGIN 1 */
-  /* user code can be inserted here */
-  /* USER CODE END 1 */
+  if (BSP_PlatformIsDetected() == 0x0) 
+  {
+    status = SD_NOT_PRESENT;
+  }
 
   return status;
 }
