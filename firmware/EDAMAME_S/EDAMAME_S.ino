@@ -1,146 +1,110 @@
-/*
+#include <Edamame_S.h>
+#include <Edamame_S_EX.h>
 
-    重要
-    ESP32のボードのバージョンは最新のmaster(85032b2)を使ってください。(2018/10/24)
-    ボードマネージャから追加するのではなく、cloneしてget.exeを使うやつ
-    
-*/
-#include <Wire.h>
-#include "edamame_core.h"
-#include "edamame_ex.h"
+#define LOOP_TIME 200
+struct control_data cansat;
 
-
-TaskHandle_t th_gps;
-
-
-struct gps {
-  double latitude;
-  double longitude;
-  int8_t hh, mm, ss;
-  long state;
-  int16_t quality;
-
-};
-
-struct gps gps_data;
+unsigned long cnt = 1;
 
 void setup() {
-  
-  //起動時の安定を願って
-  delay(500);
+	
+	Wire.begin();
+	set_pinMode();
 
-  //シリアルポート初期化
-  Serial.begin(115200);
-  Serial2.begin(9600);
+	Serial_PC.begin(115200);
+	Serial_GPS.begin(9600);
+	Serial_PC.print("Hello Calibration test\n");
 
-  //I2C初期化
-  Wire.begin(21, 22);
+	ina226_init();
+	LSM303_init_m();
+	set_gpsHiSpeed();
 
-  //地磁気設定
-  LSM303 compass(LSM303AGR_A,LSM303AGR_M);
-  compass.init_m();
-
-  //電流電圧計設定
-  Power ina226(INA226);
-  ina226.init();
-
-  //PWM初期化
-  Motor motor(0,1,2,3);
-  motor.init(4000,10);
-
-  Nichrome nichrome(4);
-
-  //ピン初期化
-
-  //xTaskCreatePinnedToCore(get_gps, "GET_GPS", 4096, NULL, 2, &th_gps, 0);
-
-  //地磁気キャリブレーション
-  //compass_calibration(&compass, 1000);
-  uint32_t cnt=0;
-  while(1){
-    motor.speed(cnt%2048-1024,cnt%2048-1024);
-    //nichrome.fire(cnt%255);
-    compass.update_m();
-    ina226.update();
-    if(cnt%10==0){    
-      Serial.printf("X:%4d Y:%4d Z:%4d arg:%5.2f %8.4f[A] %8.4f[V] ",compass.x,compass.y,compass.z,compass.arg ,ina226.current ,ina226.voltage );
-      Serial.printf("GPS_mode=%d  %02d:%02d:%02d %12.7f %12.7f",gps_data.quality ,gps_data.hh, gps_data.mm ,gps_data.ss, gps_data.latitude ,gps_data.longitude );
-      Serial.println("");
-    }
-/*
-    if(compass.arg < -0.3){
-      motor(200,0);
-    }
-
-    if(compass.arg > 0.3){
-      motor(0,200);
-    }
-
-    if((compass.arg < 0.3)&&(compass.arg > -0.3)){
-       motor(0,0);
-    }
-    */
-    delay(10);
-
-    cnt++;
-  }
-}
-
-void loop()
-{
+	cansat.mode = 0;
 
 }
 
-/*
-//地磁気センサのキャリブレーション
-void compass_calibration(struct Compass * Compass , long cycle) {
-  int16_t x, y,  z, x_max, x_min, y_max, y_min;
-  motor(200, 600);
+void loop() {
+	
+	unsigned long t = millis();
 
-  Wire.beginTransmission(LSM303AGR_M);
-  Wire.write(0x60);
-  Wire.write(0b00001101);  
-  Wire.endTransmission(true);
+	update(&cansat);
 
-  //最小値・最大値を最初の測定値で初期化
-  Wire.beginTransmission(LSM303AGR_M);
-  Wire.write(0x68);
-  Wire.endTransmission(false);
-  Wire.requestFrom(LSM303AGR_M, 6);
-  x = Wire.read();
-  x += (Wire.read()<<8);
-  y = Wire.read();
-  y += (Wire.read()<<8);
-  z = Wire.read();
-  z += (Wire.read()<<8);
+	switch (cansat.mode) {
+	case 0: //待機
+		break;
 
-  x_max = x ; x_min = x ;
-  y_max = y ; y_min = y ;
+	case 1: //落下・分離
+		break;
 
-  for (long i = 0; i < cycle; i++) {
-    Wire.beginTransmission(LSM303AGR_M);
-    Wire.write(0x60);
-    Wire.write(0b00001101);  
-    Wire.endTransmission(true);
-    
-    Wire.beginTransmission(LSM303AGR_M);
-    Wire.write(0x68);
-    Wire.endTransmission(false);
-    Wire.requestFrom(LSM303AGR_M, 6);
-    x = Wire.read();
-    x += (Wire.read()<<8);
-    y = Wire.read();
-    y += (Wire.read()<<8);
-    z = Wire.read();
-    z += (Wire.read()<<8);
-    if (x > x_max)x_max = x;
-    if (x < x_min)x_min = x;
-    if (y > y_max)y_max = y;
-    if (y < y_min)y_min = y;
-    delay(10);
-  }
-  Compass -> x_offset = (x_max + x_min) / 2;
-  Compass -> y_offset = (y_max + y_min) / 2;
-  motor( 0, 0);
-  return;
-}*/
+	case 2: //キャリブレーション
+		calibration(&cansat, 20, cnt);
+		if (cansat.mode != 0)cnt = 0;
+		break;
+
+	case 3://誘導
+		break;
+
+	case 4://ゴール
+
+	default:
+		cansat.motor_L = 0;
+		cansat.motor_R = 0;
+		cansat.nichrome = 0;
+		break;
+	}
+	
+	apply(&cansat);
+
+	print_data(&cansat);
+	//write_data(&cansat);
+	digitalWrite(LED0, cnt % 2);
+	cansat.log_num++;
+	cnt++;
+	while (millis() - t < LOOP_TIME);
+}
+
+void update(control_data *data) {
+	LSM303_update_m(&data->LSM303_data);
+	data->voltage = ina226_voltage();
+	data->current = ina226_current();
+	get_gps(&data->gps_data, 500);
+	
+	//calc_gps
+}
+
+void apply(control_data *data) {
+	motor(data->motor_L, data->motor_R);
+	nichrome(data->nichrome);
+}
+
+void calibration(control_data *data, const int n , unsigned long cnt) {
+	
+	static long x_max, y_max;
+	static long x_min, y_min;
+
+	data->motor_L = 70;
+	data->motor_R = 255;
+
+	if (cnt == 1) {
+		x_max = data->LSM303_data.x;
+		x_min = data->LSM303_data.x;
+		y_max = data->LSM303_data.y;
+		y_min = data->LSM303_data.y;
+	}
+
+	x_max = data->LSM303_data.x > x_max ? data->LSM303_data.x : x_max;
+	x_min = data->LSM303_data.x < x_min ? data->LSM303_data.x : x_min;
+	y_max = data->LSM303_data.y > y_max ? data->LSM303_data.y : y_max;
+	y_min = data->LSM303_data.y < y_min ? data->LSM303_data.y : y_min;
+
+
+	if (cnt >= n * (1000 / LOOP_TIME)) {
+		data->LSM303_data.x_offset = (x_max + x_min) / 2;
+		data->LSM303_data.y_offset = (y_max + y_min) / 2;
+		data->motor_L = 0;
+		data->motor_R = 0;
+		data->mode = 1;
+	}
+	
+	return;
+}
