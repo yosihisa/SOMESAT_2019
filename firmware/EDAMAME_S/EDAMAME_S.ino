@@ -5,10 +5,10 @@
 #define DROP_TIME 20	//落下時間 [s]
 
 //ゴール
-#define GOAL_LATITUDE    30375874
-#define GOAL_LONGITUDE  130960680
+#define GOAL_LATITUDE    33890292
+#define GOAL_LONGITUDE  130840088
 
-//ゴールとするエリアの半径(dd.dddddd * 1000000形式）
+//ゴールとするエリアの半径
 #define GOAL_ALEA 20
 #define GOAL_ALEA2  GOAL_ALEA * GOAL_ALEA
 
