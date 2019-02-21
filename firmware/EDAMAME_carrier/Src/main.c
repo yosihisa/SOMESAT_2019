@@ -53,7 +53,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define OPEN_MODE GPIO_PIN_SET
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,6 +63,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 
@@ -72,6 +73,7 @@ TIM_HandleTypeDef htim1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -110,7 +112,63 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  
+  //遅延時間の設定
+  int delay_time[3] = {125,250,250};
+  //パラシュートが展開してから上段のニクロム線が作動するまで
+  delay_time[0] += HAL_GPIO_ReadPin(Delay_0_25s_GPIO_Port, Delay_0_25s_Pin) ? 0 : 250;
+  delay_time[0] += HAL_GPIO_ReadPin(Delay_0_5s_GPIO_Port , Delay_0_5s_Pin ) ? 0 : 500;
+  delay_time[0] += HAL_GPIO_ReadPin(Delay_1s_GPIO_Port   , Delay_1s_Pin   ) ? 0 : 1000;
+  delay_time[0] += HAL_GPIO_ReadPin(Delay_2s_GPIO_Port   , Delay_2s_Pin   ) ? 0 : 2000;
+  delay_time[0] += HAL_GPIO_ReadPin(Delay_4s_GPIO_Port   , Delay_4s_Pin   ) ? 0 : 3000;
+
+  //ニクロム線の駆動時間
+  delay_time[1] += HAL_GPIO_ReadPin(Burn_0_5s_GPIO_Port, Burn_0_5s_GPIO_Port) ? 0 : 500;
+  delay_time[1] += HAL_GPIO_ReadPin(Burn_1s_GPIO_Port  , Burn_1s_GPIO_Port  ) ? 0 : 1000;
+  delay_time[1] += HAL_GPIO_ReadPin(Burn_2s_GPIO_Port  , Burn_2s_GPIO_Port  ) ? 0 : 2000;
+
+  //上段と下段の間
+  delay_time[2] += HAL_GPIO_ReadPin(Delay2_0_5_GPIO_Port, Delay2_0_5_Pin) ? 0 : 500;
+  delay_time[2] += HAL_GPIO_ReadPin(Delay2_1_GPIO_Port  , Delay2_1_Pin  ) ? 0 : 1000;
+
+////ここから起動シーケンス////
+  //スイッチが開放されるまで
+  while(HAL_GPIO_ReadPin(FlightPin_GPIO_Port,FlightPin_Pin) == OPEN_MODE);
+  
+  //スイッチが閉じられるまで
+  //ブザーを鳴らす
+  while (HAL_GPIO_ReadPin(FlightPin_GPIO_Port, FlightPin_Pin) == !OPEN_MODE);
+  //ブザーを止める
+
+  //キャリアに格納され、連続5秒以上スイッチが格納状態になったら
+  for (int i=0; i<5000; ){
+    if (HAL_GPIO_ReadPin(FlightPin_GPIO_Port, FlightPin_Pin) == !OPEN_MODE){
+      i++;
+    }else{
+      i=0;
+    }
+    HAL_Delay(1);
+  }
+  //ブザーを鳴らす
+
+  //開放されるまで待機
+  while (HAL_GPIO_ReadPin(FlightPin_GPIO_Port, FlightPin_Pin) == OPEN_MODE);
+
+  
+  HAL_Delay(delay_time[0]);//パラシュート展開からの遅延
+  //上段分離
+    //PWM_ON
+  HAL_Delay(delay_time[1]);
+    //PWM_OFF
+
+  HAL_Delay(delay_time[2]);
+
+  //下段分離
+    //PWM_ON
+  HAL_Delay(delay_time[1]);
+    //PWM_OFF
 
   /* USER CODE END 2 */
 
@@ -121,6 +179,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    //ビーコンブザー
   }
   /* USER CODE END 3 */
 }
@@ -177,17 +236,13 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 48;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 0;
+  htim1.Init.Period = 1023;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OC_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -208,8 +263,7 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  if (HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -232,6 +286,55 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED1;
+  htim3.Init.Period = 0;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -245,14 +348,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pins : Delay2_1_Pin Delay2_0_5_Pin */
-  GPIO_InitStruct.Pin = Delay2_1_Pin|Delay2_0_5_Pin;
+  /*Configure GPIO pin : FlightPin_Pin */
+  GPIO_InitStruct.Pin = FlightPin_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(FlightPin_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Delay2_2_Pin SW_Pin */
-  GPIO_InitStruct.Pin = Delay2_2_Pin|SW_Pin;
+  /*Configure GPIO pins : Delay2_1_Pin Delay2_0_5_Pin */
+  GPIO_InitStruct.Pin = Delay2_1_Pin|Delay2_0_5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);

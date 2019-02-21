@@ -80,12 +80,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Delay2_1_Pin GPIO_PIN_8
-#define Delay2_1_GPIO_Port GPIOB
-#define Delay2_2_Pin GPIO_PIN_0
-#define Delay2_2_GPIO_Port GPIOF
-#define SW_Pin GPIO_PIN_1
-#define SW_GPIO_Port GPIOF
+#define FlightPin_Pin GPIO_PIN_8
+#define FlightPin_GPIO_Port GPIOB
+#define Delay2_1_Pin GPIO_PIN_0
+#define Delay2_1_GPIO_Port GPIOF
+#define Delay2_0_5_Pin GPIO_PIN_1
+#define Delay2_0_5_GPIO_Port GPIOF
 #define Delay_4s_Pin GPIO_PIN_0
 #define Delay_4s_GPIO_Port GPIOA
 #define Delay_2s_Pin GPIO_PIN_1
@@ -102,8 +102,6 @@ void Error_Handler(void);
 #define Burn_1s_GPIO_Port GPIOA
 #define Burn_2s_Pin GPIO_PIN_7
 #define Burn_2s_GPIO_Port GPIOA
-#define Delay2_0_5_Pin GPIO_PIN_1
-#define Delay2_0_5_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
