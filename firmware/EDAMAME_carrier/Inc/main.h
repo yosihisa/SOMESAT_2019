@@ -102,6 +102,10 @@ void Error_Handler(void);
 #define Burn_1s_GPIO_Port GPIOA
 #define Burn_2s_Pin GPIO_PIN_7
 #define Burn_2s_GPIO_Port GPIOA
+#define A_Pin GPIO_PIN_9
+#define A_GPIO_Port GPIOA
+#define B_Pin GPIO_PIN_10
+#define B_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
