@@ -226,6 +226,7 @@ ProjectManager.KeepUserCode=true
 ProjectManager.LastFirmware=true
 ProjectManager.LibraryCopy=1
 ProjectManager.MainLocation=Src
+ProjectManager.NoMain=false
 ProjectManager.PreviousToolchain=TrueSTUDIO
 ProjectManager.ProjectBuild=false
 ProjectManager.ProjectFileName=EDAMAME_v2.ioc
