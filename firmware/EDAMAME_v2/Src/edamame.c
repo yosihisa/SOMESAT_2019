@@ -1,257 +1,349 @@
 #include "edamame.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-//電池電圧を返すやつ
-int get_battery(ADC_HandleTypeDef* hadc){
-	float vf;
-	int v;
-	HAL_ADC_Start(hadc);
-	HAL_ADC_PollForConversion(hadc, 100);
-	v = HAL_ADC_GetValue(hadc);
-	HAL_ADC_Stop(hadc);
-	v = v*10000 / 3101;
-	return v;
+
+#define HMC5883L_WRITE 0x3C
+#define HMC5883L_READ 0x3D
+
+#define HMC5883L_CONFIG_A    0x00
+#define HMC5883L_CONFIG_B    0x01
+#define HMC5883L_MODE        0x02
+
+FATFS fs;
+
+
+void ina226_init(I2C_HandleTypeDef *hi2c) {
+
+}
+long ina226_voltage(I2C_HandleTypeDef *hi2c) {
+	return 0;
+}
+long ina226_current(I2C_HandleTypeDef *hi2c) {
+	return 0;
 }
 
-//GPS受信するやつ
+void compass_init(I2C_HandleTypeDef *hi2c, struct xyza *data) {
+	data->x_offset = 0;
+	data->y_offset = 0;
+	data->z_offset = 0;
+	data->arg = 0;
+
+	uint8_t pData;
+	pData = 0x50; HAL_I2C_Mem_Write(hi2c, HMC5883L_WRITE, HMC5883L_CONFIG_A, 1, &pData, 1, 100);
+	pData = 0x20; HAL_I2C_Mem_Write(hi2c, HMC5883L_WRITE, HMC5883L_CONFIG_B, 1, &pData, 1, 100);
+	pData = 0x00; HAL_I2C_Mem_Write(hi2c, HMC5883L_WRITE, HMC5883L_MODE	   , 1, &pData, 1, 100);
+}
+
+void compass_update(struct xyza *data, I2C_HandleTypeDef *hi2c){
+	int16_t x,y;
+	uint8_t Data[14];  	
+	HAL_I2C_Mem_Read(hi2c	,HMC5883L_READ	,0x03	,1	,Data,6,100);
+	x = Data[0]<<8 ;x |= Data[1];
+	y = Data[4]<<8 ;y |= Data[5];
+	data-> x = (int)x - data->x_offset;
+	data-> y = (int)y - data->y_offset;
+	data-> arg = -1.0 * atan2((double)data-> y,(double)data-> x);
+	return;
+}
+
+
+void set_gpsHiSpeed(UART_HandleTypeDef *huart) {
+	uint8_t str[100];
+	HAL_Delay(2000);
+	sprintf(str, "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n");
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+	sprintf(str,"$PMTK220,100*2F\r\n");
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_Delay(80);
+
+}
+
+//GPS受信
 int get_gps(struct gps *gps_data, UART_HandleTypeDef *huart, int TIMEOUT) {
-	gps_data -> latitude = 0.000;
-	gps_data ->  longitude = 0.000;
-	gps_data ->  hh = 0;
-	gps_data -> mm = 0;
-	gps_data -> ss = 0;
-	int timeout =0;
-	while(1){
-		HAL_StatusTypeDef stat;
-		uint8_t c;
-		uint8_t gps_msg[50];
-		uint8_t GPS_stat =0;
-		int dd ,mm,mmmm,ddd,dddd;
-		
-		//GPSから時刻と座標を取得
-		GPS_stat =0;
-		while(HAL_UART_Receive(huart, &c, 1, 1) != HAL_OK){
+	gps_data->latitude = 0;
+	gps_data->longitude = 0;
+	gps_data->hh = 0;
+	gps_data->mm = 0;
+	gps_data->ss = 0;
+	gps_data->ms = 0;
+
+	int timeout = 0;
+
+	uint8_t c, gps_msg[100];
+	long dd, mm, mmmm, ddd;
+
+	while (TIMEOUT > timeout) {
+		if (HAL_UART_Receive(huart, &c, 1, 5) != HAL_OK) {
 			timeout++;
-			if(timeout > TIMEOUT)return -1;
+			continue;
 		}
-		
-		//GPSのセンテンスの始まりを探してデータタイプの種類を代入
-		if(c == '$'){			
-			for(int i =0 ; i<6 ; i++){
-				while(HAL_UART_Receive(huart, &c, 1, 1) != HAL_OK){
-					timeout++;
-					if(timeout > TIMEOUT)return -1;
-				}
+		if (c == '$') {
+			for (int i = 0; i < 6; i++) {
+				HAL_UART_Receive(huart, &c, 1, 10);
 				gps_msg[i] = c;
 			}
+			if (strncmp(gps_msg, "GPGGA", 5) == 0) {
+				for (int i = 0; c != '\n'; i++) {
+					HAL_UART_Receive(huart, &c, 1, 10);
+					gps_msg[i] = c;
 
-			//時刻・座標の取得計算
-			if(strncmp(gps_msg,"GPGGA",5) == 0){
-				for(int i =0 ; c !='\n' ; i++){
-					while(HAL_UART_Receive(huart, &c, 1, 1) != HAL_OK){
-						timeout++;
-						if(timeout > TIMEOUT)return -1;
-					}
-					gps_msg[i]=c;
-					//if(c < 0x20)i--;					
-					if (stat == HAL_OK) {
+					if (c == '\n') {
+						gps_data->hh = 10 * (gps_msg[0] - 48) + (gps_msg[1] - 48);
+						gps_data->mm = 10 * (gps_msg[2] - 48) + (gps_msg[3] - 48);
+						gps_data->ss = 10 * (gps_msg[4] - 48) + (gps_msg[5] - 48);
+						if (gps_msg[6] != '.')gps_data->mode = -1;
+						gps_data->ms = 100 * (gps_msg[7] - 48) + 10 * (gps_msg[8] - 48) + (gps_msg[9] - 48);
+						if (gps_data->hh < 0 || gps_data->hh > 24)gps_data->mode = -1;
 
-						//1行取得し終えたら
-						if(c =='\n'){
-							gps_data->hh = 10*(gps_msg[0]-48) +(gps_msg[1]-48);
-							gps_data->mm = 10*(gps_msg[2]-48) +(gps_msg[3]-48);
-							gps_data->ss = 10*(gps_msg[4]-48) +(gps_msg[5]-48);
-							if(gps_msg[6] != '.')GPS_stat |= 0b0000001;
-							if(gps_data->hh < 0 || gps_data->hh >24)GPS_stat = 0b0000001;                
-							
-							//測位できていたら
-							if(i >40){
-								int n;
-								dd=0;
-								for(n =5;n < i;n++){
-									if(gps_msg[n] ==','){
-										dd  = 10*(gps_msg[n+1]-48) +(gps_msg[n+2]-48);
-										mm  = 10*(gps_msg[n+3]-48) +(gps_msg[n+4]-48);
-										mmmm= 1000*(gps_msg[n+6]-48) +100*(gps_msg[n+7]-48)+10*(gps_msg[n+8]-48)+(gps_msg[n+9]-48);
-										
-										gps_data->latitude = dd + (((float)mm + (float)mmmm/10000)/60 );
-										if(gps_msg[n+10] != ',' || gps_msg[n+11] != 'N')GPS_stat |= 0b0000010;
-										break;
-									}
-								}
-								for(n=n+1 ;n < i;n++){
-									if(gps_msg[n] =='N'){
+
+						if (i > 40) {
+							long n;
+							dd = 0;
+							for (n = 5; n < i; n++) {
+								if (gps_msg[n] == ',') {
+									dd = 10 * (gps_msg[n + 1] - 48) + (gps_msg[n + 2] - 48);
+									mm = 10 * (gps_msg[n + 3] - 48) + (gps_msg[n + 4] - 48);
+									mmmm = 1000 * (gps_msg[n + 6] - 48) + 100 * (gps_msg[n + 7] - 48) + 10 * (gps_msg[n + 8] - 48) + (gps_msg[n + 9] - 48);
+
+									gps_data->latitude = (dd + (((double)mm + (double)mmmm / 10000) / 60)) * 1000000;
+									if (gps_msg[n + 10] != ',' || gps_msg[n + 11] != 'N')gps_data->mode = -1;
 									break;
-									}
-								}
-								for(n = n+1 ;n < i;n++){
-									if(gps_msg[n] ==','){
-										ddd  =100*(gps_msg[n+1]-48)+ 10*(gps_msg[n+2]-48) +(gps_msg[n+3]-48);
-										mm  = 10*(gps_msg[n+4]-48) +(gps_msg[n+5]-48);
-										mmmm= 1000*(gps_msg[n+7]-48) +100*(gps_msg[n+8]-48)+10*(gps_msg[n+9]-48)+(gps_msg[n+10]-48);
-										gps_data->longitude = ddd + (((float)mm + (float)mmmm/10000)/60 );
-										if(gps_msg[n+11] != ',' || gps_msg[n+12] != 'E')GPS_stat |= 0b0000100;
-										break;
-									}
-								}
-								for(n=n+1 ;n < i;n++){
-									if(gps_msg[n] =='E'){
-										break;
-									}
 								}
 							}
-							//測位できていなかったら
-							else   GPS_stat |= 0b0010000;
-							return GPS_stat ;
+							for (n = n + 1; n < i; n++) {
+								if (gps_msg[n] == 'N') {
+									break;
+								}
+							}
+							for (n = n + 1; n < i; n++) {
+								if (gps_msg[n] == ',') {
+									ddd = 100 * (gps_msg[n + 1] - 48) + 10 * (gps_msg[n + 2] - 48) + (gps_msg[n + 3] - 48);
+									mm = 10 * (gps_msg[n + 4] - 48) + (gps_msg[n + 5] - 48);
+									mmmm = 1000 * (gps_msg[n + 7] - 48) + 100 * (gps_msg[n + 8] - 48) + 10 * (gps_msg[n + 9] - 48) + (gps_msg[n + 10] - 48);
+									gps_data->longitude = (ddd + (((double)mm + (double)mmmm / 10000) / 60)) * 1000000;
+									if (gps_msg[n + 11] != ',' || gps_msg[n + 12] != 'E')gps_data->mode = -1;
+									break;
+								}
+							}
+							for (n = n + 1; n < i; n++) {
+								if (gps_msg[n] == 'E') {
+									break;
+								}
+							}
+							for (n = n + 1; n < i; n++) {
+								if (gps_msg[n] == ',') {
+									gps_data->mode = (gps_msg[n + 1] - 48);
+									break;
+								}
+							}
+						} else {
+							gps_data->mode = 0;
+						}
+						if (gps_data->mode == -1) {
+							gps_data->latitude = 0;
+							gps_data->longitude = 0;
+						} else {
+							return gps_data->mode;
 						}
 					}
 				}
 			}
 		}
-    }
+	}
+	return -1;
 }
 
-//地磁気キャリブレーションするやつ
-void compass_calibrate(struct compass *Compass, I2C_HandleTypeDef *hi2c, TIM_HandleTypeDef *htimL, TIM_HandleTypeDef *htimR, UART_HandleTypeDef *huart, ADC_HandleTypeDef* hadc, int cycle) {
-	int16_t x,y,x_max,x_min,y_max,y_min;
-	uint8_t Data[14];  	
-	motor(htimL,htimR,512,1024);
+void calc_gps(struct gps *gps_data, long latitude, long longitude) {
 
-	//最小値・最大値を最初の測定値で初期化
-	HAL_I2C_Mem_Read(hi2c	,HMC5883L_READ	,0x03	,1	,&Data,6,100);
-	x = Data[0]<<8 ;x |= Data[1];
-	y = Data[4]<<8 ;y |= Data[5];
-	x_max = x ; x_min = x ;
-	y_max = y ; y_min = y ;
-	for (int i = 0; i < cycle; i++) {
-		uint8_t Data[14];  
-    	HAL_I2C_Mem_Read(hi2c	,HMC5883L_READ	,0x03	,1	,&Data,6,100);
-		x = Data[0]<<8 ;x |= Data[1];
-    	y = Data[4]<<8 ;y |= Data[5];
-		if(x > x_max)x_max =x;
-		if(x < x_min)x_min =x;
-		if(y > y_max)y_max =y;
-		if(y < y_min)y_min =y;
-		HAL_Delay(10);
-
-	}
-	Compass -> x_offset = (x_max + x_min)/2;
-	Compass -> y_offset = (y_max + y_min)/2;
-	motor(htimL,htimR,0,0);
-	return;
+	long dx = latitude - gps_data->latitude;	//南北　北が正
+	long dy = longitude - gps_data->longitude;	//東西　東が正
+	gps_data->arg = atan2(dy, dx);
+	gps_data->dist = dx * dx + dy * dy;
 }
 
-//地磁気の値を読む
-void get_compass(struct compass *Compass, I2C_HandleTypeDef *hi2c){
-	int16_t x,y;
-	uint8_t Data[14];  	
-	HAL_I2C_Mem_Read(hi2c	,HMC5883L_READ	,0x03	,1	,&Data,6,100);
-	x = Data[0]<<8 ;x |= Data[1];
-	y = Data[4]<<8 ;y |= Data[5];
-	Compass -> x = (int)x - Compass->x_offset;
-	Compass -> y = (int)y - Compass->y_offset;
-	Compass -> arg = -1.0 * atan2((double)Compass -> y,(double)Compass -> x);
-	return;
-}
-//モーター速度変更
-void motor(TIM_HandleTypeDef *htimL ,TIM_HandleTypeDef *htimR,int L ,int R){
-	if(L>0){
-		__HAL_TIM_SetCompare(htimL,TIM_CHANNEL_1,L);
-		__HAL_TIM_SetCompare(htimL,TIM_CHANNEL_2,0);
-	}
-	else{
-		__HAL_TIM_SetCompare(htimL,TIM_CHANNEL_1,0);
-		__HAL_TIM_SetCompare(htimL,TIM_CHANNEL_2,-L);
-	}
+void init(myCansat *data) {
 
-	if(R>0){
-		__HAL_TIM_SetCompare(htimR,TIM_CHANNEL_1,0);
-		__HAL_TIM_SetCompare(htimR,TIM_CHANNEL_2,R);
-	}
-	else{
-		__HAL_TIM_SetCompare(htimR,TIM_CHANNEL_1,-R);
-		__HAL_TIM_SetCompare(htimR,TIM_CHANNEL_2,0);
-	}
-	return;
-}
+	FRESULT res_fs;
+
+	data->motor_L = 0;
+	data->motor_R = 0;
+	data->nichrome = 0;
+	data->mode = 0;
+
+	compass_init(data->i2c, &data->compass_data);
+	printf("Init compass\n");
+
+	ina226_init(data->i2c);
+	printf("Init INA226\n");
+
+	set_gpsHiSpeed(data->uart_gps);
+	data->gps_data.arg = 0;
+	data->gps_data.dist = 0;
+	data->gps_data.mode = -1;
+	printf("Init GNSS\n");
+
+	while (camera_init(&data->camera) != CAMERA_OK);
+	printf("Init Camera\n");
 
 
-//JPEGデコーダ入力関数
-uint32_t in_func(JDEC* jd, uint8_t* buff, uint32_t nbyte){
-	IODEV *dev = (IODEV*)jd->device;   
-	if (buff) {
-		uint32_t e;
-		if (dev->jpeg_data_seek+ nbyte <= dev->jpeg_data_size) {
-			e = nbyte;
+	//SDカードを初期化できるまで待つ
+	do {
+		res_fs = f_mount(&fs, "", 1);
+		if (res_fs != FR_OK) {
+			printf("f_mount() : error %u\n", res_fs);
+			HAL_Delay(120);
+		}
+
+		res_fs = f_opendir(&data->dir, "");
+		if (res_fs != FR_OK) {
+			printf("f_opendir() : error %u\n", res_fs);
+			HAL_Delay(120);
+		}
+		HAL_Delay(800);
+	} while (res_fs != FR_OK);
+	printf("Init SDcard\n");
+	
+	//ディレクトリの作成
+	char path[30];
+	
+	for (data->jpeg.dir_num = 0; data->jpeg.dir_num < MAX_DIR; data->jpeg.dir_num++) {
+		sprintf(path, "/edmm%03d", data->jpeg.dir_num);
+		res_fs = f_mkdir(path);
+		if (res_fs == FR_OK) {
+			printf("Make dir  /edmm%03d\n", data->jpeg.dir_num);
+			break;
 		} else {
-			e = dev->jpeg_data_seek+ nbyte - dev->jpeg_data_size;
+			printf("f_mkdir():error %d     /%03d/ \n", res_fs, data->jpeg.dir_num);
 		}
-		for (int i = 0; i < e; i++) {
-			*(buff + i) = dev->jpeg_data[dev->jpeg_data_seek + i];
-		}
-		dev->jpeg_data_seek += e;
+	}
+
+
+	data->jpeg.file_num = 0;
+	data->jpeg.mode = DISABLE;
+	data->log.log_num = 0;
+	//制御履歴ファイルの作成
+	sprintf(path, "/edmm%03d/log.csv", data->jpeg.dir_num);
+	res_fs = f_open(&data->log.fil, (char*)path, FA_WRITE | FA_CREATE_ALWAYS);
+	if (res_fs != FR_OK) {
+		printf("f_open() : %d\n", res_fs);
+	}
+	res_fs = f_sync(&data->log.fil);
+	if (res_fs != FR_OK) {
+		printf("f_sync() : %d\n", res_fs);
+	}
+
+}
+void update(myCansat *data) {
+	
+	const float pi = 3.1415926535;
+
+	get_gps(&data->gps_data, data->uart_gps, 400);
+	calc_gps(&data->gps_data, GOAL_LATITUDE, GOAL_LONGITUDE);
+	compass_update(&data->compass_data, data->i2c);
+
+	data->voltage = ina226_voltage(data->i2c);
+	data->current = ina226_current(data->i2c);
+
+	data->flightPin = HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin);
+
+	if (data->jpeg.mode == ENABLE) {
+		//while (snap_shot(&data->camera) != CAMERA_OK);
+		snap_shot(&data->camera);
+		get_picture(&data->camera, data->jpeg.io.jpeg_data, MAX_SIZE, &data->jpeg.data_size);
+	}
+	data->arg = data->gps_data.arg - data->compass_data.arg;
+	while (data->arg > 1.0 * pi) data->arg -= 2 * pi;
+	while (data->arg < -1.0 * pi) data->arg += 2 * pi;
+
+}
+void decode(myCansat *data) {
+	//JPEGデコード
+	JRESULT jpeg_res;
+	uint8_t work[3100];
+	JDEC jdec;
+
+	data->jpeg.xc = 0;
+	data->jpeg.yc = 0;
+	data->jpeg.s = 0;
+
+	data->jpeg.io.jpeg_data_seek = 0;
+	jpeg_res = jd_prepare(&jdec, in_func, work, 3100, &data->jpeg.io.jpeg_data);
+	memset(&data->jpeg.io.RED_bool, 0, HEIGHT*WIDTH/8);
+	
+
+	if (jpeg_res == JDR_OK) {
 		
-		return e;
+		//デコード開始
+		jpeg_res = jd_decomp(&jdec, out_func, 0);
 
-	} else {
+		if (jpeg_res == JDR_OK) {
 
-		if (dev->jpeg_data_seek + nbyte <= dev->jpeg_data_size) {
-			dev->jpeg_data_seek += nbyte;
-			return nbyte;
-
-		} else {
-			return 0;
-		}
-	}
-}
-
-
-//JPEGデコーダ出力関数
-uint32_t out_func(JDEC* jd, void* bitmap, JRECT* rect)
-{
-    IODEV *dev = (IODEV*)jd->device;       
-	uint8_t *src;
-	uint32_t width, height,bitshift;
-	uint8_t r, g, b;
-	double h, s, v; //H:色相 S:彩度 V:明度
-
-	src = (BYTE*)bitmap;
-	for (height = 0; height < (rect->bottom - rect->top + 1); height++) {
-		for (width = 0; width < (rect->right - rect->left + 1); width++) {
-
-			//バッファのRGB88から各色を抽出
-			r = (BYTE)*(src + 3 * (height*(rect->right - rect->left + 1) + width));
-			g = (BYTE)*(src + 3 * (height*(rect->right - rect->left + 1) + width) + 1);
-			b = (BYTE)*(src + 3 * (height*(rect->right - rect->left + 1) + width) + 2);
-
-			//HSV変換
-			double MAX = max((max(r, g)), b);
-			double MIN = min((min(r, g)), b);
-			v = MAX / 256 * 100;
-
-			if (MAX == MIN) {
-				h = 0;
-				s = 0;
-			} else {
-				if (MAX == r) h = 60.0*(g - b) / (MAX - MIN) + 0;
-				else if (MAX == g) h = 60.0*(b - r) / (MAX - MIN) + 120.0;
-				else if (MAX == b) h = 60.0*(r - g) / (MAX - MIN) + 240.0;
-
-				if (h > 360.0) h = h - 360.0;
-				else if (h < 0) h = h + 360.0;
-				s = (MAX - MIN) / MAX * 100.0;
-			}
-
-			if (h > 360.0)h -= 360;
-
-			if ((h >= H_MIN_1 && h <= H_MAX_1)|| (h >= H_MIN_2 && h <= H_MAX_2)) {
-				if ((s >= S_MIN && s <= S_MAX) && (v >= V_MIN && v <= V_MAX)) {
-					bitshift = (rect->left + width) % 8;
-					dev->RED_bool[rect->top + height][(rect->left + width) / 8] |= (0b10000000 >> bitshift);
-
+			//重心計算
+			TIM2->CNT = 0;
+			for (UINT h = 0; h < jdec.height; h++) {
+				for (UINT w = 0; w < jdec.width; w++) {
+					if ((data->jpeg.io.RED_bool[h][w / 8] & (0b10000000 >> (w % 8))) != 0) {
+						data->jpeg.xc += w;
+						data->jpeg.yc += h;
+						data->jpeg.s++;
+					}
 				}
 			}
+			data->jpeg.xc /= data->jpeg.s;
+			data->jpeg.yc /= data->jpeg.s;
 		}
 	}
-	return 1;
 }
+void apply(myCansat *data) {
 
+}
+void write(myCansat *data) {
+
+	FRESULT res_fs;
+	char str[300];
+
+	char path[30];
+	if (data->jpeg.mode == ENABLE) {
+		unsigned int writeBytes;
+		sprintf(path, "/edmm%03d/%03d.jpg", data->jpeg.dir_num, data->jpeg.file_num);
+		f_open(&data->jpeg.fil, path, FA_WRITE | FA_CREATE_ALWAYS);
+		res_fs = f_write(&data->jpeg.fil, &data->jpeg.io.jpeg_data, data->jpeg.data_size, &writeBytes);
+		f_close(&data->jpeg.fil);
+		data->jpeg.file_num++;
+		if (res_fs != FR_OK) {
+			printf("f_write error:%d\n", res_fs);
+		}
+	}
+
+	sprintf(str, "%d,\n",
+		data->log.log_num
+	);
+	res_fs = f_puts(str, &data->log.fil);
+	f_sync(&data->log.fil);
+	data->log.log_num++;
+
+	if (res_fs != FR_OK) {
+		printf("f_puts error:%d\n", res_fs);
+	}
+
+}
+void print(myCansat *data) {
+	printf("\nmode:%d F:%d log_num:%3d /%03d/%03d.jpg\n", data->mode,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
+	printf("GPS:%d TIME:%02d:%02d:%02d.%03d ", data->gps_data.mode,data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms);
+	printf("N %d E %d\n", data->gps_data.latitude, data->gps_data.longitude);
+	printf("X:%3d Y:%3d xc:%3d yc:%3d s:%3d\n", data->compass_data.x, data->compass_data.y, data->jpeg.xc, data->jpeg.yc, data->jpeg.s);
+	printf("arg:%5.3f (GPS:%5.3f compass:%5.3f)\n", data->arg, data->gps_data.arg, data->compass_data.arg);
+	printf("motor( %4d , %4d ) nichrome:%d \n", data->motor_L, data->motor_R,data->nichrome);
+
+}

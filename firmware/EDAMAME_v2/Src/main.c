@@ -1,65 +1,48 @@
-
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
-  * This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * Copyright (c) 2018 STMicroelectronics International N.V. 
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without 
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice, 
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f4xx_hal.h"
 #include "fatfs.h"
 
+/* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "edamame.h"
-#include "GPS.h"
-#include "C1098.h"
 /* USER CODE END Includes */
 
-/* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
 SD_HandleTypeDef hsd;
@@ -74,6 +57,14 @@ UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+void __io_putchar(uint8_t ch) {
+	HAL_UART_Transmit(&huart3, &ch, 1, 1);
+}
 
 /* USER CODE END PV */
 
@@ -81,7 +72,6 @@ UART_HandleTypeDef huart6;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_UART4_Init(void);
-static void MX_ADC1_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
@@ -89,40 +79,44 @@ static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART3_UART_Init(void);
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-                                
-                                
-
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE END PFP */
 
+/* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t nichrome_t;
-#define I2C_BUF_SIZE  8
-#define I2C_TIMEOUT 100
+void motor(int L, int R) {
+	if (L > 0) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, L);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
+	} else {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, -L);
+	}
+
+	if (R > 0) {
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, R);
+	} else {
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, -R);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+	}
+	return;
+}
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
-  *
-  * @retval None
+  * @retval int
   */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	HAL_StatusTypeDef stat;
-	uint8_t c;
-	uint8_t gps_msg[50];
-	uint8_t GPS_stat = 0;
-	struct gps gps_data;
-	struct compass HMC5883L;
-	char    str[300];
+
   /* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -141,7 +135,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_UART4_Init();
-  MX_ADC1_Init();
   MX_USART6_UART_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
@@ -151,608 +144,37 @@ int main(void)
   MX_USART3_UART_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-	HAL_Delay(1000);
-	sprintf(str, "EDAMAME Battery = %.3f V \r\n", (float)get_battery(&hadc1) / 1000);
-	HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
 
-	//PWM初期化
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
-	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
-	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
-	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+	myCansat cansat;
+	
+	cansat.i2c = &hi2c1;
+	cansat.uart_gps = &huart6;
+	cansat.uart_wifi = &huart1;
 
-	//I2C(地磁気)初期化
-	int tx_buf[I2C_BUF_SIZE] = { 0x00 }, rx_buf[I2C_BUF_SIZE] = { 0x00 };
-	uint8_t pData;
-	pData = 0x50; HAL_I2C_Mem_Write(&hi2c1, HMC5883L_WRITE, HMC5883L_CONFIG_A, 1, &pData, 1, 100);
-	pData = 0x20; HAL_I2C_Mem_Write(&hi2c1, HMC5883L_WRITE, HMC5883L_CONFIG_B, 1, &pData, 1, 100);
-	pData = 0x00; HAL_I2C_Mem_Write(&hi2c1, HMC5883L_WRITE, HMC5883L_MODE, 1, &pData, 1, 100);
+	cansat.camera.uart_port = &huart4;
+	cansat.camera.packet_size = 256;
+	cansat.camera.baudrate = 460800;
+	cansat.camera.resolution = QVGA;
 
+	init(&cansat);
 
-	//カメラ初期化
-	int ce = camera_inital_HiSpeed(&huart4, QVGA, 460800);
-	sprintf(str, "\r\n\r\ncamera_Init %d\r\n", ce);
-	HAL_UART_Transmit(&huart3, str, strlen(str), 0xFFFF);
-
-
-	//SDカード初期化
-	FRESULT res_fs;
-	FATFS fs;
-	DIR dir;
-	char buf[128];
-	int ret;
-	const int MAX_DIR = 100;
-	unsigned int testBytes;
-
-	uint32_t data_size;
-	uint8_t path[13] = "test.txt";
-
-	//SDカードを初期化できるまで待つ
-	do {
-		res_fs = f_mount(&fs, "", 1);
-		if (res_fs != FR_OK) {
-			sprintf(str, "f_mount() : error %u\n", res_fs);
-			HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-		}
-
-		res_fs = f_opendir(&dir, "");
-		if (res_fs != FR_OK) {
-			sprintf(str, "f_opendir() : error %u\n", res_fs);
-			HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-		}
-		HAL_Delay(800);
-	} while (res_fs != FR_OK);
-
-	//ディレクトリの作成
-	unsigned int dir_num = 0;
-	for (dir_num = 0; dir_num < MAX_DIR; dir_num++) {
-		sprintf(str, "/edmm%d", dir_num);
-		res_fs = f_mkdir(str);
-		if (res_fs == FR_OK) {
-			sprintf(str, "f_mkdir() : edmm%d\r\n", dir_num);
-			HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-			break;
-		} else {
-			sprintf(str, "f_mkdir() : edmm%d error %d\r\n", dir_num, res_fs);
-			HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-		}
-	}
-
-	//画像記録用のJPEGファイル名
-	JDEC jdec;        /* Decompression object */
-	JRESULT jpeg_res;      /* Result code of TJpgDec API */
-	IODEV jpeg;      /* User defined device identifier */
-
-	unsigned int file_num = 0;
-	unsigned int log_num = 0;//ログの番号
-	FIL fil_jpeg;
-
-
-	//制御履歴記録用
-	FIL fil_log;
-	sprintf(path, "/edmm%d/log.csv", dir_num);
-	res_fs = f_open(&fil_log, (char*)path, FA_WRITE | FA_CREATE_ALWAYS);
-
-	sprintf(str, "log_num,mode,hh,mm,ss,latitude,longitude,GPS_error,Voltage,HMC5883L.x,HMC5883L.y,HMC5883L.arg,dist,arg,GPS_arg,motorL,motorR,,file_num,cx,cy,s\n");
-	ret = f_puts(str, &fil_log);
-	if (ret == EOF) {
-		sprintf(str, "f_puts() : error\n\n");
-		HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-	}
-	f_sync(&fil_log);
-
-
-
-	//容量不足の時の例外処理を後でここに書く
-
-	//
-
-  /*
-	 while (1)  {
-
-	 sprintf(str, "%.3f V ", (float)get_battery(&hadc1) / 1000);
-	  HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-	  //撮影
-	  while(snap_shot(&huart4) != CAMERA_OK);
-
-	  //ファイルを開く
-	  sprintf(path,"/edmm%d/%d.jpg",dir_num,file_num);
-	  res_fs = f_open(&fil_jpeg, (char*)path, FA_WRITE | FA_CREATE_ALWAYS);
-
-	  sprintf(str,"/edmm%d/%d.jpg f_open:%d ",dir_num,file_num,res_fs);
-	  HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-
-	  //写真を転送
-	  int e = get_picture(&huart4,&jpeg.jpeg_data,(uint32_t)40000,&data_size);
-	  sprintf(str,"get_picture:%d %dB", e,data_size);
-	  HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-
-	  //SDカードに書き込み
-	  res_fs = f_write(&fil_jpeg, &jpeg.jpeg_data, data_size, &testBytes);
-	  sprintf(str," f_write:%d %dB   ",res_fs,testBytes);
-	  HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-
-	  //ファイルを保存して閉じる
-	  res_fs = f_close(&fil_jpeg);
-	  file_num++;
-
-	  //JPEGデコード
-	  uint8_t work[3100];
-	  jpeg.jpeg_data_seek =0;
-	  jpeg_res = jd_prepare(&jdec, in_func, work, 3100, &jpeg);
-	  sprintf(str,"jd_prepare:%d", jpeg_res);
-	  HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-	  memset(jpeg.RED_bool, 0, sizeof(jpeg.RED_bool));
-
-	  if (jpeg_res == JDR_OK && data_size%100 != 0) {
-		sprintf(str," %ux%upx ", jdec.width, jdec.height);
-		HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-		//デコード開始
-		jpeg_res = jd_decomp(&jdec, out_func, 0);
-		sprintf(str,"jd_decomp:%d ", jpeg_res);
-		HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-		if (jpeg_res == JDR_OK) {
-
-		  //重心計算
-		  UINT xc = 0, yc = 0, s = 0;
-		  for (UINT h = 0; h < jdec.height; h++) {
-			for (UINT w = 0; w < jdec.width; w++) {
-			  if ((jpeg.RED_bool[h][w / 8] & (0b10000000 >> (w % 8))) != 0) {
-				xc += w;
-				yc += h;
-				s++;
-			  }
-			}
-		  }
-		  if (s != 0) {
-			xc = xc / s;
-			yc = yc / s;
-			sprintf(str,"(x,y)=(%d,%d)  s=%d\n", xc,yc,s);
-			HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-
-		  } else {
-			sprintf(str,"(x,y) = Null \n");
-			HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-		  }
-
-		}
-		//JPEGのデコードに失敗した場合
-		else {
-		  sprintf(str,"Failed to decompress: rc=%d  \n", jpeg_res);
-		  HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-		}
-	  } else{
-		sprintf(str,"error\n", jpeg_res);
-		HAL_UART_Transmit( &huart3, str, strlen( str ), 0xFFFF );
-	  }
-
-	}
-  */
-  /*
-	//GPS直接出力
-	  while(1){
-		  stat = HAL_UART_Receive(&huart6, &c, 1, 1);
-			  if (stat == HAL_OK) {
-			  stat = HAL_UART_Transmit(&huart3, &c, 1, -1);
-		  }
-	  }
-  */
+	//cansat.jpeg.mode = ENABLE;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	//フライトピンが抜けてなければ
-
-	//フライトピンが抜けるまで待つ
-	int n = 0, e;
-	nichrome_t =0;
-	if (HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin) == GPIO_PIN_RESET){
-		while (1) {
-			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//動作確認用
-
-			//電圧の取得
-			double v = (double)get_battery(&hadc1) / 1000.0;
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-			if (v < LOW_BATTERY)HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-			//GPSの座標取得
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-			e = get_gps(&gps_data, &huart6, 1000);
-			if (e == 0)HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);//取得できてたらLED点滅
-
-			sprintf(str, "%d,%d,%02d,%02d,%02d,%9.6f,%10.6f,%x,%.3lf, , , , , , ,%d,%d,,%d,%d,%d,%d\n",
-				log_num,
-				3,
-				gps_data.hh,
-				gps_data.mm,
-				gps_data.ss,
-				gps_data.latitude,
-				gps_data.longitude,
-				e,
-				v,
-				0,
-				0,
-				file_num,
-				-1,
-				-1,
-				-1);
-
-			HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-			HAL_UART_Transmit(&huart1, &str, strlen(str), 0x00FF);
-			HAL_UART_Transmit(&huart1, "\r", 1, 0x00FF);
-			ret = f_puts(str, &fil_log);
-			if (ret == EOF) {
-				sprintf(str, "f_puts() : error\n\n");
-				HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-			}
-			f_sync(&fil_log);
-			log_num++;
-
-			//フライトピンが抜けたら
-			if (HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin) == GPIO_PIN_SET){
-				nichrome_t=0;
-				break;
-			}
-		}
-
-		//着地するまで待機
-		nichrome_t=0;
-		//int nt = 0;
-		while(1){
-			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//動作確認用
-
-			//電圧の取得
-			double v = (double)get_battery(&hadc1) / 1000.0;
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-			if (v < LOW_BATTERY)HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-			//GPSの座標取得
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-			e = get_gps(&gps_data, &huart6, 1000);
-			if (e == 0)HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);//取得できてたらLED点滅
-
-			sprintf(str, "%d,%d,%02d,%02d,%02d,%9.6f,%10.6f,%x,%.3lf, , , , , , ,%d,%d,,%d,%d,%d,%d\n",
-				log_num,
-				2,
-				gps_data.hh,
-				gps_data.mm,
-				gps_data.ss,
-				gps_data.latitude,
-				gps_data.longitude,
-				e,
-				v,
-				0,
-				0,
-				file_num,
-				-1,
-				-1,
-				-1);
-
-			HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-			HAL_UART_Transmit(&huart1, &str, strlen(str), 0x00FF);
-			HAL_UART_Transmit(&huart1, "\r", 1, 0x00FF);
-			ret = f_puts(str, &fil_log);
-			if (ret == EOF) {
-				sprintf(str, "f_puts() : error\n\n");
-				HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-			}
-			f_sync(&fil_log);
-			log_num++;
-			nichrome_t ++;
-			if(nichrome_t >=20)break;
-		}
-		//パラシュート切り離し
-			HAL_GPIO_WritePin(NICHROME_GPIO_Port, NICHROME_Pin, GPIO_PIN_SET);
-			HAL_Delay(1000);
-			HAL_GPIO_WritePin(NICHROME_GPIO_Port, NICHROME_Pin, GPIO_PIN_RESET);
-			HAL_Delay(1000);
-	}
-
-
-	//地磁気キャリブレーション
-	compass_calibrate(&HMC5883L, &hi2c1, &htim2, &htim3, &huart3, &hadc1, 2000);
-
-	n = 0;//ゴール判定に使うやつ
-
-	int mode = 1;//モード 0 GPS 1 画像認識
-	int xp; //画像検出時の1つ前の回転状態
-	int dc[5];//重心の変化量(過去5回)
-	int xc_p = 0, yc_p = 0;//１つ前の重心
 	while (1) {
-		e = 1;
-		UINT xc = 0, yc = 0, s = 0;
-		int motorL, motorR;
-		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//動作確認用
+    /* USER CODE END WHILE */
 
-		//電圧の取得
-		double v = (double)get_battery(&hadc1) / 1000.0;
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		if (v < LOW_BATTERY)HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		//v = 1.235;
+    /* USER CODE BEGIN 3 */
+		update(&cansat);
+		decode(&cansat);
 
-		//GPSの座標取得
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-		e = get_gps(&gps_data, &huart6, 1000);
-		if (e == 0)HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);//取得できてたらLED点滅
-
-		//地磁気取得
-		get_compass(&HMC5883L, &hi2c1);
-
-		//----------------------画像取得--------------------------
-		while (snap_shot(&huart4) != CAMERA_OK);
-
-		//ファイルを開く
-		sprintf(path, "/edmm%d/%d.jpg", dir_num, file_num);
-		res_fs = f_open(&fil_jpeg, (char*)path, FA_WRITE | FA_CREATE_ALWAYS);
-
-		get_picture(&huart4, &jpeg.jpeg_data, (uint32_t)40000, &data_size);//写真を転送
-		res_fs = f_write(&fil_jpeg, &jpeg.jpeg_data, data_size, &testBytes);//SDカードに書き込み
-
-		//ファイルを保存して閉じる
-		res_fs = f_close(&fil_jpeg);
-		//----------------------画像取得--------------------------
-
-		//目標との距離と角度を求める
-		double dx = GOAL_LATITUDE - gps_data.latitude;
-		double dy = GOAL_LONGITUDE - gps_data.longitude;
-		double arg = atan2(dy, dx);
-		double dist = dx * dx + dy * dy;
-
-		const double pi = 3.1415926535;
-		double a = HMC5883L.arg + MAGNETIC_DECLINATION - arg;
-
-		while (a > 1.0*pi) a -= 2 * pi;
-		while (a < -1.0*pi) a += 2 * pi;
-
-
-		//指定の方位に向かって進む
-		if (mode == 0) {	//ゴールまでの距離が遠い場合 GPS誘導
-			if(dist < GOAL_ALEA2){
-				mode =1;
-			}else{
-				if (e == 0) {
-					if (a > 1.6) {
-						motorL = 0;
-						motorR = 1024;
-					}
-					if (a < 1.60 && a >= 0.18) {
-						motorL = 700;
-						motorR = 1024;
-					}
-					if (a < 0.18 && a >= -0.18) {
-						motorL = 1024;
-						motorR = 1024;
-					}
-					if (a < -0.18 && a >= -1.60) {
-						motorL = 1024;
-						motorR = 700;
-					}
-					if (a <= -1.6) {
-						motorL = 1024;
-						motorR = 0;
-					}
-				} else {
-					motorL = 800;
-					motorR = 1024;
-				}
-			}
-			motor(&htim2, &htim3, motorL, motorR);
-		}
-		if(mode == 1){	//ゴールまでの距離が近い場合	画像認識
-			mode = 1;
-
-			//JPEGデコード
-
-			motor(&htim2, &htim3, 0, 0);
-
-			uint8_t work[3100];
-			jpeg.jpeg_data_seek = 0;
-			jpeg_res = jd_prepare(&jdec, in_func, work, 3100, &jpeg);
-			memset(jpeg.RED_bool, 0, sizeof(jpeg.RED_bool));
-
-			if (jpeg_res == JDR_OK && data_size % 100 != 0) {
-				//デコード開始
-				jpeg_res = jd_decomp(&jdec, out_func, 0);
-				if (jpeg_res == JDR_OK) {
-
-					//重心計算
-					//UINT xc = 0, yc = 0, s = 0;
-					for (UINT h = 0; h < jdec.height; h++) {
-						for (UINT w = 0; w < jdec.width; w++) {
-							if ((jpeg.RED_bool[h][w / 8] & (0b10000000 >> (w % 8))) != 0) {
-								xc += w;
-								yc += h;
-								s++;
-							}
-						}
-					}
-					if (s > 0 ) {	//カラーコーンを見つけた場合
-						xc = xc / s;
-						yc = yc / s;
-						if (s > SQUARE) {
-							//右
-							if (xc < 60) {
-								xp = 1;
-								motorL = 900;
-								motorR = 300;
-							}
-							//やや右
-							if (xc >= 60 && xc < 120) {
-								xp = 1;
-								motorL = 900;
-								motorR = 600;
-							}
-							//中央
-							if (xc >= 120 && xc < 200) {
-								xp = 0;
-								motorL = 900;
-								motorR = 900;
-							}
-							//やや左
-							if (xc >= 200 && xc < 260) {
-								xp = -1;
-								motorL = 600;
-								motorR = 900;
-							}
-							//左
-							if (xc >= 260) {
-								xp = -1;
-								motorL = 300;
-								motorR = 900;
-							}
-
-							//ゴール判定
-							dc[4] = dc[3];
-							dc[3] = dc[2];
-							dc[2] = dc[1];
-							dc[1] = dc[0];
-							dc[0] = (xc_p - xc)*(xc_p - xc) + (yc_p - yc)*(yc_p - yc);
-							xc_p = xc;
-							yc_p = yc;
-							if (n > 5) {
-								int dc_sum = dc[0] + dc[1] + dc[2] + dc[3] + dc[4];
-								if (dc_sum < GOAL)break;
-							}
-							n++;
-
-							
-						} else {
-							if(xp == 1){
-								motorR = 400;
-								motorL = 1000;
-							}else{
-								motorR = 1000;
-								motorL = 400;
-							}
-						}
-
-					} else {	//無かった場合
-						xc = -1;
-						yc = -1;
-						if (xp == 1) {
-							motorR = 400;
-							motorL = 700;
-						} else {
-							motorR = 700;
-							motorL = 400;
-						}
-					}
-
-				}
-				//JPEGのデコードに失敗した場合
-				else {
-					motorL = 0;
-					motorR = 0;
-				}
-			} else {
-				motorL = 0;
-				motorR = 0;
-			}
-			motor(&htim2, &htim3, motorL, motorR);
-		}
-
-		//motor(&htim2, &htim3, motorL, motorR);
-
-/*
-		//いろいろ表示
-		//GPSエラーコード
-		sprintf(str, "%x  ", e);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		//電圧
-		sprintf(str, "%.3lfV ", v);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		//GPS時刻・座標
-		sprintf(str, " %02d:%02d:%02d %9.6f,%10.6f ", gps_data.hh, gps_data.mm, gps_data.ss, gps_data.latitude, gps_data.longitude);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		//地磁気・方位角
-		sprintf(str, "X:%+5d Y:%+5d  %+f  ", HMC5883L.x, HMC5883L.y, HMC5883L.arg);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		//距離・進路
-		sprintf(str, "dist %e Darg%+f  GPS_arg %+f ", dist, a, arg);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		//画像
-		HAL_UART_Transmit(&huart3, &path, strlen(path), 0x00FF);
-		sprintf(str, "\n", dist, a, arg);
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-*/
-		//sprintf(str, "%.3lf,0,%x,%9.6f,%10.6f,%e,%f,%f,%f\n", v, e, gps_data.latitude, gps_data.longitude, dist, arg, HMC5883L.arg, a);
-		//HAL_UART_Transmit(&huart1, &str, strlen(str), 0x00FF);
-
-		sprintf(str, "%d,%d,%02d,%02d,%02d,%9.6f,%10.6f,%x,%.3lf,%+5d,%+5d,%+f,%e,%+f,%+f,%d,%d,,%d,%d,%d,%d\n",
-			log_num,
-			mode,
-			gps_data.hh,
-			gps_data.mm,
-			gps_data.ss,
-			gps_data.latitude,
-			gps_data.longitude,
-			e,
-			v,
-			HMC5883L.x,
-			HMC5883L.y,
-			HMC5883L.arg,
-			dist,
-			a,
-			arg,
-			motorL,
-			motorR,
-			file_num,
-			xc,
-			yc,
-			s);
-
-		HAL_UART_Transmit(&huart3, &str, strlen(str), 0x00FF);
-		HAL_UART_Transmit(&huart1, &str, strlen(str), 0x00FF);
-		HAL_UART_Transmit(&huart1, "\r", 1, 0x00FF);
-		ret = f_puts(str, &fil_log);
-		if (ret == EOF) {
-			sprintf(str, "f_puts() : error\n\n");
-			HAL_UART_Transmit(&huart3, str, strlen(str), 0x00FF);
-		}
-		f_sync(&fil_log);
-		log_num++;
-		file_num++;
-
-	}
-	/* USER CODE END 2 */
-
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
-	motor(&htim2, &htim3, -1024, -1024);
-	HAL_Delay(500);
-	motor(&htim2, &htim3, 1024, 1024);
-	HAL_Delay(1000);
-	motor(&htim2, &htim3, 0, 0);
-	HAL_Delay(1000);
-	motor(&htim2, &htim3, 1024, 1024);
-	HAL_Delay(200);
-	motor(&htim2, &htim3, 0, 0);
-	HAL_Delay(200);
-	motor(&htim2, &htim3, 1024, 1024);
-	HAL_Delay(200);
-	motor(&htim2, &htim3, 0, 0);
-	HAL_Delay(200);
-	motor(&htim2, &htim3, 1024, 1024);
-	HAL_Delay(200);
-	motor(&htim2, &htim3, 0, 0);
-	while (1) {
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-		HAL_Delay(500);
-		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-		HAL_Delay(500);
-
+		write(&cansat);
+		print(&cansat);
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 	}
   /* USER CODE END 3 */
-
 }
 
 /**
@@ -761,36 +183,38 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
-
-    /**Configure the main internal regulator output voltage 
-    */
+  /** Configure the main internal regulator output voltage 
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
-
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 240;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 15;
+  RCC_OscInitStruct.PLL.PLLQ = 8;
   RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+  /** Activate the Over-Drive mode 
+  */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -798,72 +222,39 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDIO|RCC_PERIPHCLK_CLK48;
-  PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLQ;
+  PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
+  PeriphClkInitStruct.PLLSAI.PLLSAIN = 64;
+  PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
+  PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
+  PeriphClkInitStruct.PLLSAIDivQ = 1;
+  PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLSAIP;
   PeriphClkInitStruct.SdioClockSelection = RCC_SDIOCLKSOURCE_CLK48;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
-    /**Configure the Systick interrupt time 
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-    /**Configure the Systick 
-    */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* ADC1 init function */
-static void MX_ADC1_Init(void)
-{
-
-  ADC_ChannelConfTypeDef sConfig;
-
-    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
-    */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
-    */
-  sConfig.Channel = ADC_CHANNEL_8;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
-}
-
-/* I2C1 init function */
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_I2C1_Init(void)
 {
 
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 400000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -875,15 +266,29 @@ static void MX_I2C1_Init(void)
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
 
 }
 
-/* SDIO init function */
+/**
+  * @brief SDIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_SDIO_SD_Init(void)
 {
 
+  /* USER CODE BEGIN SDIO_Init 0 */
+
+  /* USER CODE END SDIO_Init 0 */
+
+  /* USER CODE BEGIN SDIO_Init 1 */
+
+  /* USER CODE END SDIO_Init 1 */
   hsd.Instance = SDIO;
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
@@ -891,97 +296,133 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd.Init.ClockDiv = 2;
+  /* USER CODE BEGIN SDIO_Init 2 */
+
+  /* USER CODE END SDIO_Init 2 */
 
 }
 
-/* TIM2 init function */
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM2_Init(void)
 {
 
-  TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_OC_InitTypeDef sConfigOC;
+  /* USER CODE BEGIN TIM2_Init 0 */
 
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1023;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN TIM2_Init 2 */
 
+  /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
 
 }
 
-/* TIM3 init function */
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM3_Init(void)
 {
 
-  TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_OC_InitTypeDef sConfigOC;
+  /* USER CODE BEGIN TIM3_Init 0 */
 
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 1023;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN TIM3_Init 2 */
 
+  /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
 
 }
 
-/* UART4 init function */
+/**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_UART4_Init(void)
 {
 
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
   huart4.Instance = UART4;
   huart4.Init.BaudRate = 115200;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -992,15 +433,29 @@ static void MX_UART4_Init(void)
   huart4.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart4) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
 
 }
 
-/* USART1 init function */
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART1_UART_Init(void)
 {
 
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
   huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -1011,15 +466,29 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
 
 }
 
-/* USART3 init function */
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART3_UART_Init(void)
 {
 
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
   huart3.Init.BaudRate = 115200;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
@@ -1030,15 +499,29 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart3) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
-/* USART6 init function */
+/**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART6_UART_Init(void)
 {
 
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
   huart6.Init.BaudRate = 9600;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
@@ -1049,22 +532,22 @@ static void MX_USART6_UART_Init(void)
   huart6.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart6) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
-
-  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -1084,6 +567,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : NICHROME_Pin */
   GPIO_InitStruct.Pin = NICHROME_Pin;
@@ -1106,17 +595,14 @@ static void MX_GPIO_Init(void)
 
 /**
   * @brief  This function is executed in case of error occurrence.
-  * @param  file: The file name as string.
-  * @param  line: The line in file as a number.
   * @retval None
   */
-void _Error_Handler(char *file, int line)
+void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  while(1) 
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -1128,21 +614,13 @@ void _Error_Handler(char *file, int line)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t* file, uint32_t line)
+void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* User can add his own implementation to report the file name and line number,
+	  ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

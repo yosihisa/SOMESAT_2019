@@ -1,25 +1,26 @@
-#include "main.h"
 #include "stm32f4xx_hal.h"
 
 typedef enum {
-    CAMERA_OK = 0,				/* (0) Succeeded */
-    CAMERA_ERR,			        /* (1) ƒGƒ‰[ */
-    CAMERA_COM_ERR,             /* (2) ’ÊMƒGƒ‰[ */
-    CAMERA_NOT_ENOUGH_CORE      /* (3)ƒƒ‚ƒŠ•s‘« */
-    
+	CAMERA_OK = 0,				  /* (0) Succeeded */
+	CAMERA_ERR,			          /* (1) ã‚¨ãƒ©ãƒ¼ */
+	CAMERA_COM_ERR,               /* (2) é€šä¿¡ã‚¨ãƒ©ãƒ¼ */
+	CAMERA_NOT_ENOUGH_CORE,       /* (3)ãƒ¡ãƒ¢ãƒªä¸è¶³ */
+	CAMERA_FAILED_CHANGE_BAUDRATE /* (4)ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆå¤‰æ›´ã«å¤±æ•— */
+
 } CAMERARESULT;
 
 typedef enum {
-    QVGA = 0,
-    VGA
-} CAMERARESIZE;
+	QVGA = 0,
+	VGA
+} CAMERA_RESOLUTION;
 
-CAMERARESULT camera_Init(UART_HandleTypeDef *huart ,CAMERARESIZE size);//’ÊMŠm—§E‰Šú‰»EƒpƒPƒbƒgƒTƒCƒYw’è
-CAMERARESULT snap_shot(UART_HandleTypeDef *huart);//Ê^‚ğB‚é
-CAMERARESULT get_picture(UART_HandleTypeDef *huart,uint8_t *buffer,uint32_t size , uint32_t *data_size);//Ê^‚ğ“]‘—‚·‚é
+typedef struct {
+	UART_HandleTypeDef *uart_port;
+	uint32_t packet_size;
+	uint32_t baudrate;
+	CAMERA_RESOLUTION resolution;
+} c1098_handle;
 
-
-CAMERARESULT camera_sync(UART_HandleTypeDef *huart);
-CAMERARESULT camera_inital(UART_HandleTypeDef *huart ,CAMERARESIZE size);
-CAMERARESULT camera_inital_HiSpeed(UART_HandleTypeDef *huart ,CAMERARESIZE size,uint32_t baudrate);
-            
+CAMERARESULT camera_init(c1098_handle *handle); //åˆæœŸåŒ–
+CAMERARESULT snap_shot(c1098_handle *handle);//å†™çœŸã‚’æ’®ã‚‹
+CAMERARESULT get_picture(c1098_handle *handle,uint8_t *buffer,uint32_t size , uint32_t *data_size);//å†™çœŸã‚’è»¢é€ã™ã‚‹
