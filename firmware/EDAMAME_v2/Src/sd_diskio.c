@@ -1,42 +1,67 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    sd_diskio.c (based on sd_diskio_template.c v2.1.0 as "Use dma template" is disabled)
+  * @file    sd_diskio.c (based on sd_diskio_dma_template.c v2.0.2 as "Use dma template" is enabled)
   * @brief   SD Disk I/O driver
   ******************************************************************************
-  * @attention
+  * This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2018 STMicroelectronics International N.V. 
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * Redistribution and use in source and binary forms, with or without 
+  * modification, are permitted, provided that the following conditions are met:
+  *
+  * 1. Redistribution of source code must retain the above copyright notice, 
+  *    this list of conditions and the following disclaimer.
+  * 2. Redistributions in binary form must reproduce the above copyright notice,
+  *    this list of conditions and the following disclaimer in the documentation
+  *    and/or other materials provided with the distribution.
+  * 3. Neither the name of STMicroelectronics nor the names of other 
+  *    contributors to this software may be used to endorse or promote products 
+  *    derived from this software without specific written permission.
+  * 4. This software, including modifications and/or derivative works of this 
+  *    software, must execute solely and exclusively on microcontroller or
+  *    microprocessor devices manufactured by or for STMicroelectronics.
+  * 5. Redistribution and use of this software other than as permitted under 
+  *    this license is void and will automatically terminate your rights under 
+  *    this license. 
+  *
+  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
+  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
+  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
+  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */
-/* USER CODE END Header */
-
+  */ 
 /* USER CODE BEGIN firstSection */
 /* can be used to modify / undefine following code or add new definitions */
 /* USER CODE END firstSection*/
 
 /* Includes ------------------------------------------------------------------*/
-
 #include "ff_gen_drv.h"
 #include "sd_diskio.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-/* use the default SD timout as defined in the platform BSP driver*/
-#if defined(SDMMC_DATATIMEOUT)
-#define SD_TIMEOUT SDMMC_DATATIMEOUT
-#elif defined(SD_DATATIMEOUT)
-#define SD_TIMEOUT SD_DATATIMEOUT
-#else
+
+ /*
+ * the following Timeout is useful to give the control back to the applications
+ * in case of errors in either BSP_SD_ReadCpltCallback() or BSP_SD_WriteCpltCallback()
+ * the value by default is as defined in the BSP platform driver otherwise 30 secs
+ */
 #define SD_TIMEOUT 30 * 1000
-#endif
 
 #define SD_DEFAULT_BLOCK_SIZE 512
 
@@ -50,9 +75,21 @@
 /* #define DISABLE_SD_INIT */
 /* USER CODE END disableSDInit */
 
+/* 
+ * when using cachable memory region, it may be needed to maintain the cache
+ * validity. Enable the define below to activate a cache maintenance at each
+ * read and write operation.
+ * Notice: This is applicable only for cortex M7 based platform.
+ */
+/* USER CODE BEGIN enableSDDmaCacheMaintenance */
+/* #define ENABLE_SD_DMA_CACHE_MAINTENANCE  1 */
+/* USER CODE BEGIN enableSDDmaCacheMaintenance */
+
+/* Private variables ---------------------------------------------------------*/
 /* Disk status */
 static volatile DSTATUS Stat = STA_NOINIT;
 
+static volatile  UINT  WriteStatus = 0, ReadStatus = 0;
 /* Private function prototypes -----------------------------------------------*/
 static DSTATUS SD_CheckStatus(BYTE lun);
 DSTATUS SD_initialize (BYTE);
@@ -84,7 +121,6 @@ const Diskio_drvTypeDef  SD_Driver =
 /* USER CODE END beforeFunctionSection */
 
 /* Private functions ---------------------------------------------------------*/
-
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
   Stat = STA_NOINIT;
@@ -104,8 +140,7 @@ static DSTATUS SD_CheckStatus(BYTE lun)
   */
 DSTATUS SD_initialize(BYTE lun)
 {
-Stat = STA_NOINIT;  
-
+  Stat = STA_NOINIT;
 #if !defined(DISABLE_SD_INIT)
 
   if(BSP_SD_Init() == MSD_OK)
@@ -140,20 +175,51 @@ DSTATUS SD_status(BYTE lun)
   * @param  count: Number of sectors to read (1..128)
   * @retval DRESULT: Operation result
   */
-              
 DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
 {
   DRESULT res = RES_ERROR;
+  ReadStatus = 0;
+  uint32_t timeout;
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+  uint32_t alignedAddr;
+#endif
 
-  if(BSP_SD_ReadBlocks((uint32_t*)buff,
-                       (uint32_t) (sector),
-                       count, SD_TIMEOUT) == MSD_OK)
+  if(BSP_SD_ReadBlocks_DMA((uint32_t*)buff,
+                           (uint32_t) (sector),
+                           count) == MSD_OK)
   {
-    /* wait until the read operation is finished */
-    while(BSP_SD_GetCardState()!= MSD_OK)
+    /* Wait that the reading process is completed or a timeout occurs */
+    timeout = HAL_GetTick();
+    while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
     {
     }
-    res = RES_OK;
+    /* incase of a timeout return error */
+    if (ReadStatus == 0)
+    {
+      res = RES_ERROR;
+    }
+    else
+    {
+      ReadStatus = 0;
+      timeout = HAL_GetTick();
+
+      while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+      {
+        if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+        {
+          res = RES_OK;
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+            /*
+               the SCB_InvalidateDCache_by_Addr() requires a 32-Byte aligned address,
+               adjust the address and the D-Cache size to invalidate accordingly.
+             */
+            alignedAddr = (uint32_t)buff & ~0x1F;
+            SCB_InvalidateDCache_by_Addr((uint32_t*)alignedAddr, count*BLOCKSIZE + ((uint32_t)buff - alignedAddr));
+#endif
+           break;
+        }
+      }
+    }
   }
 
   return res;
@@ -171,25 +237,55 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
   * @retval DRESULT: Operation result
   */
 #if _USE_WRITE == 1
-              
 DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
   DRESULT res = RES_ERROR;
+  WriteStatus = 0;
+  uint32_t timeout;
+#if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
+  uint32_t alignedAddr;
+  /*
+   the SCB_CleanDCache_by_Addr() requires a 32-Byte aligned address
+   adjust the address and the D-Cache size to clean accordingly.
+   */
+  alignedAddr = (uint32_t)buff &  ~0x1F;
+  SCB_CleanDCache_by_Addr((uint32_t*)alignedAddr, count*BLOCKSIZE + ((uint32_t)buff - alignedAddr));
+#endif
 
-  if(BSP_SD_WriteBlocks((uint32_t*)buff,
-                        (uint32_t)(sector),
-                        count, SD_TIMEOUT) == MSD_OK)
+  if(BSP_SD_WriteBlocks_DMA((uint32_t*)buff,
+                            (uint32_t) (sector),
+                            count) == MSD_OK)
   {
-	/* wait until the Write operation is finished */
-    while(BSP_SD_GetCardState() != MSD_OK)
+    /* Wait that writing process is completed or a timeout occurs */
+
+    timeout = HAL_GetTick();
+    while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
     {
     }
-    res = RES_OK;
+    /* incase of a timeout return error */
+    if (WriteStatus == 0)
+    {
+      res = RES_ERROR;
+    }
+    else
+    {
+      WriteStatus = 0;
+      timeout = HAL_GetTick();
+
+      while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+      {
+        if (BSP_SD_GetCardState() == SD_TRANSFER_OK)
+        {
+          res = RES_OK;
+          break;
+        }
+      }
+    }
   }
 
   return res;
 }
-#endif /* _USE_WRITE == 1 */  
+#endif /* _USE_WRITE == 1 */
 
 /* USER CODE BEGIN beforeIoctlSection */
 /* can be used to modify previous code / undefine following code / add new code */
@@ -248,6 +344,47 @@ DRESULT SD_ioctl(BYTE lun, BYTE cmd, void *buff)
 /* USER CODE BEGIN afterIoctlSection */
 /* can be used to modify previous code / undefine following code / add new code */
 /* USER CODE END afterIoctlSection */
+
+/* USER CODE BEGIN callbackSection */ 
+/* can be used to modify / following code or add new code */
+/* USER CODE END callbackSection */
+/**
+  * @brief Tx Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+
+ /*
+   ===============================================================================
+    Select the correct function signature depending on your platform.
+    please refer to the file "stm32xxxx_eval_sd.h" to verify the correct function
+    prototype
+   ===============================================================================
+  */
+//void BSP_SD_WriteCpltCallback(uint32_t SdCard)
+void BSP_SD_WriteCpltCallback(void)
+{
+  WriteStatus = 1;
+}
+
+/**
+  * @brief Rx Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+
+  /*
+   ===============================================================================
+    Select the correct function signature depending on your platform.
+    please refer to the file "stm32xxxx_eval_sd.h" to verify the correct function
+    prototype
+   ===============================================================================
+  */
+//void BSP_SD_ReadCpltCallback(uint32_t SdCard)
+void BSP_SD_ReadCpltCallback(void)
+{
+  ReadStatus = 1;
+}
 
 /* USER CODE BEGIN lastSection */ 
 /* can be used to modify / undefine previous code or add new code */
