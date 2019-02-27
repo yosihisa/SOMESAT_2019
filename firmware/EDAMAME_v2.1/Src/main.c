@@ -111,6 +111,15 @@ void apply(myCansat *data) {
 	HAL_GPIO_WritePin(NICHROME_GPIO_Port, NICHROME_Pin, data->nichrome);
 	return;
 }
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim == &htim5) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -177,7 +186,7 @@ int main(void)
 
 	//‰Šú‰»
 	init(&cansat);
-	HAL_TIM_Base_Start(&htim5);
+	HAL_TIM_Base_Start_IT(&htim5);
 
 	cansat.jpeg.mode = ENABLE;
 
@@ -234,6 +243,8 @@ int main(void)
 			break;
 
 		case 3://—U“±
+			//decode(&cansat);
+
 			if (cansat.gps_data.mode >= 1) {
 				if (cansat.arg < -1.3) {
 					cansat.motor_L = 30;
@@ -540,9 +551,9 @@ static void MX_TIM5_Init(void)
   htim5.Instance = TIM5;
   htim5.Init.Prescaler = 45000;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 0xFFFFFFFF;
+  htim5.Init.Period = LOOP_TIME;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
   {
     Error_Handler();
