@@ -1,10 +1,13 @@
 #ifndef __GOAL_H__
 #define __GOAL_H__
 
+#define LOOP_TIME 1000	//1ループの時間 [ms]
+#define DROP_TIME 20	//落下時間 [s]
+
 //ゴールの座標を指定(dd.dddddd , ddd,dddddd)
 //九工大校庭
-#define GOAL_LATITUDE	 338903550
-#define GOAL_LONGITUDE	1308402200
+#define GOAL_LATITUDE	 33890292
+#define GOAL_LONGITUDE	130840088
 
 //種子島
 //#define GOAL_LATITUDE	 30.375900

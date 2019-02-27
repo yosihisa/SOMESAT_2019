@@ -49,6 +49,7 @@ SD_HandleTypeDef hsd;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart1;
@@ -79,6 +80,7 @@ static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -86,7 +88,10 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void motor(int L, int R) {
+void apply(myCansat *data) {
+	int L = data->motor_L;
+	int R = data->motor_R;
+
 	if (L > 0) {
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, L);
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
@@ -102,6 +107,8 @@ void motor(int L, int R) {
 		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, -R);
 		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
 	}
+
+	HAL_GPIO_WritePin(NICHROME_GPIO_Port, NICHROME_Pin, data->nichrome);
 	return;
 }
 /* USER CODE END 0 */
@@ -143,6 +150,7 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_USART3_UART_Init();
   MX_FATFS_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
 	myCansat cansat;
@@ -156,23 +164,130 @@ int main(void)
 	cansat.camera.baudrate = 460800;
 	cansat.camera.resolution = QVGA;
 
-	init(&cansat);
 
+	//PWM初期化
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+
+	//初期化
+	init(&cansat);
+	HAL_TIM_Base_Start(&htim5);
 
 	cansat.jpeg.mode = ENABLE;
+
+	if (HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin) == GPIO_PIN_RESET) {
+		cansat.mode = 0;
+	} else {
+		cansat.mode = 2;
+	}
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	unsigned long cnt = 1;
+
 	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		TIM5->CNT = 0;
 		update(&cansat);
-		decode(&cansat);
 
+		switch (cansat.mode) {
+
+		case 0: //待機
+
+			if (cansat.flightPin == GPIO_PIN_SET) {
+				cansat.mode++;
+				cnt = 0;
+			}
+			break;
+
+		case 1: //落下・分離
+
+			if (cnt >= DROP_TIME * (1000 / LOOP_TIME)) {
+
+				cansat.nichrome = GPIO_PIN_SET;
+
+				if (cnt > (DROP_TIME + 1)*(1000 / LOOP_TIME)) {
+					cansat.nichrome = GPIO_PIN_RESET;
+					cansat.mode++;
+					cnt = 0;
+				}
+			}
+			break;
+
+		case 2: //キャリブレーション
+			cansat.jpeg.mode = DISABLE;
+			calibration(&cansat, 20, cnt);
+			if (cansat.mode != 2) {
+				cansat.jpeg.mode = ENABLE;
+				cnt = 0;
+			}
+			break;
+
+		case 3://誘導
+			if (cansat.gps_data.mode >= 1) {
+				if (cansat.arg < -1.3) {
+					cansat.motor_L = 30;
+					cansat.motor_R = 180;
+				}
+				if (-1.3 <= cansat.arg && cansat.arg < -0.3) {
+					cansat.motor_L = 100;
+					cansat.motor_R = 180;
+				}
+				if (-0.3 <= cansat.arg && cansat.arg < +0.3) {
+					cansat.motor_L = 190;
+					cansat.motor_R = 190;
+				}
+				if (+0.3 <= cansat.arg && cansat.arg < +1.3) {
+					cansat.motor_L = 180;
+					cansat.motor_R = 100;
+				}
+				if (+1.3 <= cansat.arg) {
+					cansat.motor_L = 180;
+					cansat.motor_R = 30;
+				}
+			} else {
+				cansat.motor_L = 50;
+				cansat.motor_R = 100;
+			}
+			if (cansat.gps_data.dist < GOAL_ALEA2) {
+				cansat.motor_L = 0;
+				cansat.motor_R = 0;
+				cansat.mode++;
+				cnt = 0;
+			}
+			break;
+
+		case 4://画像認識
+			decode(&cansat);
+			break;
+
+		case 5://ゴール
+			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+
+		default:
+			cansat.motor_L = 0;
+			cansat.motor_R = 0;
+			cansat.nichrome = 0;
+			break;
+		}
+
+		apply(&cansat);
+
+		cnt++;
+		//decode(&cansat);
 		write(&cansat);
 		print(&cansat);
+		while (TIM5->CNT < LOOP_TIME);
 		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 	}
   /* USER CODE END 3 */
@@ -220,7 +335,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
@@ -317,9 +432,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 4;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1023;
+  htim2.Init.Period = 255;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -370,9 +485,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
+  htim3.Init.Prescaler = 4;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1023;
+  htim3.Init.Period = 255;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -401,6 +516,51 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 45000;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 0xFFFFFFFF;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
 
 }
 
