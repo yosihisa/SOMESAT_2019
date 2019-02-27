@@ -12,7 +12,8 @@
 |/firmware |プログラム  |
 |/firmware/EDAMAME_carrier |さや  |
 |/firmware/EDAMAME_S_M |えだまめS ミッション機 OBC  |
-|/firmware/EDAMAME_v2 |えだまめ画像認識機 Ver2  |  
+|/firmware/EDAMAME_v2.1 |えだまめ画像認識機 Ver2.1  |  
+|/firmware/edamame_v2_OLD |えだまめ画像認識機2018のソース  |  
   
 ## 関連リポジトリ  
 
