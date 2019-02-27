@@ -50,21 +50,21 @@ void compass_update(struct xyza *data, I2C_HandleTypeDef *hi2c){
 
 
 void set_gpsHiSpeed(UART_HandleTypeDef *huart) {
-	uint8_t str[100];
+	char str[100];
 	HAL_Delay(2000);
 	sprintf(str, "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n");
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
 	sprintf(str,"$PMTK220,100*2F\r\n");
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
-	HAL_UART_Transmit(huart, str, strlen(str), 200);
+	HAL_UART_Transmit(huart, str, strlen(str), 2000);
 	HAL_Delay(80);
 
 }
@@ -258,9 +258,11 @@ void update(myCansat *data) {
 	data->flightPin = HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin);
 
 	if (data->jpeg.mode == ENABLE) {
-		//while (snap_shot(&data->camera) != CAMERA_OK);
-		snap_shot(&data->camera);
-		get_picture(&data->camera, data->jpeg.io.jpeg_data, MAX_SIZE, &data->jpeg.data_size);
+		for (int n = 0; n < 5; n++) {
+			while (snap_shot(&data->camera) != CAMERA_OK);
+			get_picture(&data->camera, data->jpeg.io.jpeg_data, MAX_SIZE, &data->jpeg.data_size);
+			if (data->jpeg.data_size > 1024)break;
+		}
 	}
 	data->arg = data->gps_data.arg - data->compass_data.arg;
 	while (data->arg > 1.0 * pi) data->arg -= 2 * pi;
@@ -312,10 +314,10 @@ void write(myCansat *data) {
 
 	FRESULT res_fs;
 	char str[300];
-
 	char path[30];
+	unsigned int writeBytes;
+
 	if (data->jpeg.mode == ENABLE) {
-		unsigned int writeBytes;
 		sprintf(path, "/edmm%03d/%03d.jpg", data->jpeg.dir_num, data->jpeg.file_num);
 		f_open(&data->jpeg.fil, path, FA_WRITE | FA_CREATE_ALWAYS);
 		res_fs = f_write(&data->jpeg.fil, &data->jpeg.io.jpeg_data, data->jpeg.data_size, &writeBytes);
@@ -326,24 +328,34 @@ void write(myCansat *data) {
 		}
 	}
 
-	sprintf(str, "%d,\n",
-		data->log.log_num
+	sprintf(str, "%ld,%d, %02d,%02d,%02d.%03d, %ld,%ld, %lu,%lu,%f,%d, %d,%d,%f,%lu,%f, %d,%d, %d, %lu,%lu,%lu\n",
+		data->log.log_num, data->mode,
+		data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms,
+		data->voltage, data->current,
+		data->gps_data.latitude, data->gps_data.longitude, data->gps_data.arg, data->gps_data.mode,
+		data->compass_data.x, data->compass_data.y,data->compass_data.arg,
+		data->gps_data.dist, data->arg,
+		data->motor_L, data->motor_R,
+		data->jpeg.file_num,
+		data->jpeg.xc, data->jpeg.yc, data->jpeg.s
 	);
-	res_fs = f_puts(str, &data->log.fil);
+
+	res_fs = f_write(&data->log.fil, str, strlen(str), &writeBytes);
 	f_sync(&data->log.fil);
 	data->log.log_num++;
 
 	if (res_fs != FR_OK) {
-		printf("f_puts error:%d\n", res_fs);
+		printf("f_write error:%d\n", res_fs);
 	}
 
 }
 void print(myCansat *data) {
-	printf("\nmode:%d F:%d log_num:%3d /%03d/%03d.jpg\n", data->mode,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
+	
+	printf("\nmode:%d F:%d log_num:%3ld /%03d/%03d.jpg\n", data->mode,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
 	printf("GPS:%d TIME:%02d:%02d:%02d.%03d ", data->gps_data.mode,data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms);
-	printf("N %d E %d\n", data->gps_data.latitude, data->gps_data.longitude);
-	printf("X:%3d Y:%3d xc:%3d yc:%3d s:%3d\n", data->compass_data.x, data->compass_data.y, data->jpeg.xc, data->jpeg.yc, data->jpeg.s);
+	printf("N %lu E %lu\n", data->gps_data.latitude, data->gps_data.longitude);
+	printf("X:%3d Y:%3d xc:%3lu yc:%3lu s:%3lu\n", data->compass_data.x, data->compass_data.y, data->jpeg.xc, data->jpeg.yc, data->jpeg.s);
 	printf("arg:%5.3f (GPS:%5.3f compass:%5.3f)\n", data->arg, data->gps_data.arg, data->compass_data.arg);
 	printf("motor( %4d , %4d ) nichrome:%d \n", data->motor_L, data->motor_R,data->nichrome);
-
+	
 }

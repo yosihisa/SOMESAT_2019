@@ -1,49 +1,21 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   *  FatFs - Generic FAT file system module  R0.12c (C)ChaN, 2017
   ******************************************************************************
-  * This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * Copyright (c) 2019 STMicroelectronics International N.V. 
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without 
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice, 
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 
 #ifndef _FFCONF
 #define _FFCONF 68300	/* Revision ID */
@@ -51,6 +23,7 @@
 /*-----------------------------------------------------------------------------/
 / Additional user header to be used  
 /-----------------------------------------------------------------------------*/
+#include "main.h"
 #include "stm32f4xx_hal.h"
 #include "bsp_driver_sd.h"
 
@@ -109,7 +82,7 @@
 / Locale and Namespace Configurations
 /-----------------------------------------------------------------------------*/
 
-#define _CODE_PAGE         850
+#define _CODE_PAGE         1
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect setting of the code page can cause a file open failure.
 /
@@ -255,7 +228,7 @@
 /  _NORTC_MDAY and _NORTC_YEAR have no effect. 
 /  These options have no effect at read-only configuration (_FS_READONLY = 1). */
 
-#define _FS_LOCK    2     /* 0:Disable or >=1:Enable */
+#define _FS_LOCK    4     /* 0:Disable or >=1:Enable */
 /* The option _FS_LOCK switches file lock function to control duplicated file open
 /  and illegal operation to open objects. This option must be 0 when _FS_READONLY
 /  is 1.
