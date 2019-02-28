@@ -83,3 +83,5 @@ void update(myCansat *data);
 void decode(myCansat *data);
 void write(myCansat *data);
 void print(myCansat *data);
+
+void calibration(myCansat *data, const int n, unsigned long cnt);

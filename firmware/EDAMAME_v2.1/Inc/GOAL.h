@@ -1,7 +1,7 @@
 #ifndef __GOAL_H__
 #define __GOAL_H__
 
-#define LOOP_TIME 1000	//1ループの時間 [ms]
+#define LOOP_TIME 500	//1ループの時間 [ms]
 #define DROP_TIME 20	//落下時間 [s]
 
 //ゴールの座標を指定(dd.dddddd , ddd,dddddd)
@@ -18,8 +18,8 @@
 //#define GOAL_LONGITUDE	130.8402200
 
 
-//ゴールとするエリアの半径(dd.dddddd形式）
-#define GOAL_ALEA	0.00001
+//ゴールとするエリアの半径
+#define GOAL_ALEA	20
 #define GOAL_ALEA2	GOAL_ALEA * GOAL_ALEA
 
 //磁気偏角(西偏が正）
