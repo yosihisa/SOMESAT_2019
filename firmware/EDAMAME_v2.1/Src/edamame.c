@@ -257,6 +257,10 @@ void update(myCansat *data) {
 
 	data->flightPin = HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin);
 
+	data->jpeg.xc = 0;
+	data->jpeg.yc = 0;
+	data->jpeg.s = 0;
+
 	if (data->jpeg.mode == ENABLE) {
 		for (int n = 0; n < 5; n++) {
 			while (snap_shot(&data->camera) != CAMERA_OK);

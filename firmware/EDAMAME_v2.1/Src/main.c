@@ -214,13 +214,13 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		TIM5->CNT = 0;
 		update(&cansat);
-		if (cansat.gps_data.mode = > 1) {
+		if (cansat.gps_data.mode >= 1) {
 			HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
 		}
 		switch (cansat.mode) {
 
 		case 0: //待機
-
+			cansat.jpeg.mode = DISABLE;
 			if (cansat.flightPin == GPIO_PIN_SET) {
 				cansat.mode++;
 				cnt = 0;
@@ -228,7 +228,7 @@ int main(void)
 			break;
 
 		case 1: //落下・分離
-
+			cansat.jpeg.mode = ENABLE;
 			if (cnt >= DROP_TIME * (1000 / LOOP_TIME)) {
 
 				cansat.nichrome = GPIO_PIN_SET;
@@ -242,10 +242,10 @@ int main(void)
 			break;
 
 		case 2: //キャリブレーション
-			cansat.jpeg.mode = DISABLE;
+			cansat.jpeg.mode = ENABLE;
 			calibration(&cansat, 20, cnt);
 			if (cansat.mode != 2) {
-				cansat.jpeg.mode = ENABLE;
+
 				cnt = 0;
 			}
 			break;

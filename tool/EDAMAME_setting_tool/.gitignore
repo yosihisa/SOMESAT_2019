@@ -1,0 +1,7 @@
+.vs
+x64/
+Debug/
+Release/
+Log.txt
+EDMM/
+DxLibNoneModel_NoneSoftDrawCode_VC/*
