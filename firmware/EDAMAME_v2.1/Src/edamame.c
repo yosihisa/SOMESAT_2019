@@ -353,7 +353,7 @@ void write(myCansat *data) {
 }
 void print(myCansat *data) {
 	
-	printf("\nmode:%d F:%d log_num:%3ld /%03d/%03d.jpg\n", data->mode,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
+	printf("\nmode:%d V=%4ldmV F:%d log_num:%3ld /%03d/%03d.jpg\n", data->mode,data->voltage,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
 	printf("GPS:%d TIME:%02d:%02d:%02d.%03d\n", data->gps_data.mode,data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms);
 	printf("dist:%9lu   N %lu E %lu \n", data->gps_data.dist, data->gps_data.latitude, data->gps_data.longitude);
 	printf("X:%3d Y:%3d xc:%3lu yc:%3lu s:%3lu\n", data->compass_data.x, data->compass_data.y, data->jpeg.xc, data->jpeg.yc, data->jpeg.s);
@@ -368,8 +368,8 @@ void calibration(myCansat *data, const int n, unsigned long cnt) {
 	static long x_max, y_max;
 	static long x_min, y_min;
 
-	data->motor_L = 50;
-	data->motor_R = 100;
+	data->motor_L = 100;
+	data->motor_R = 130;
 
 	if (cnt == 1) {
 		x_max = data->compass_data.x;

@@ -24,7 +24,7 @@ typedef struct {
 #define V_MIN 30
 #define V_MAX 100
 
-#define FILENAME "edmm\\%03d.jpg"
+#define FILENAME "EDMM\\%03d.jpg"
 #define HEIGHT 480
 #define WIDTH  640
 BYTE RED_bool[HEIGHT][WIDTH / 8];
