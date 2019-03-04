@@ -43,12 +43,15 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 I2C_HandleTypeDef hi2c1;
 
 SD_HandleTypeDef hsd;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart1;
@@ -79,6 +82,8 @@ static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_TIM5_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -86,7 +91,10 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void motor(int L, int R) {
+void apply(myCansat *data) {
+	int L = data->motor_L;
+	int R = data->motor_R;
+
 	if (L > 0) {
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, L);
 		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
@@ -102,7 +110,31 @@ void motor(int L, int R) {
 		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, -R);
 		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
 	}
+
+	HAL_GPIO_WritePin(NICHROME_GPIO_Port, NICHROME_Pin, data->nichrome);
 	return;
+}
+
+int time_overflow = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim == &htim5) {
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
+		__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+		time_overflow++;
+		printf("%d\n",time_overflow);
+	}
+}
+
+int get_battery() {
+	int v;
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, 100);
+	v = HAL_ADC_GetValue(&hadc1);
+	HAL_ADC_Stop(&hadc1);
+	v = v * 10000 / 3101;
+	return v;
 }
 /* USER CODE END 0 */
 
@@ -143,6 +175,8 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_USART3_UART_Init();
   MX_FATFS_Init();
+  MX_TIM5_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
 	myCansat cansat;
@@ -156,23 +190,214 @@ int main(void)
 	cansat.camera.baudrate = 460800;
 	cansat.camera.resolution = QVGA;
 
-	init(&cansat);
 
+	//PWM初期化
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, 0);
+	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, 0);
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, 0);
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, 0);
+
+	//初期化
+	init(&cansat);
+	HAL_TIM_Base_Start_IT(&htim5);
 
 	cansat.jpeg.mode = ENABLE;
+
+	if (HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin) == GPIO_PIN_RESET) {
+		cansat.mode = 0;
+	} else {
+		cansat.mode = 2;
+	}
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	unsigned long cnt = 1;
+
+	int xp=0; //画像検出時の1つ前の回転状態
+	int dc[5];//重心の変化量(過去5回)
+	int xc_p = 0, yc_p = 0;//１つ前の重心
+	int n =0;
 	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		
+		TIM5->CNT = 0;
 		update(&cansat);
-		decode(&cansat);
+		cansat.voltage = get_battery();
 
+		if (cansat.gps_data.mode >= 1) {
+			HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
+		}
+
+		//cansat.mode =0;
+		switch (cansat.mode) {
+
+		case 0: //待機
+			cansat.jpeg.mode = DISABLE;
+			if (cansat.flightPin == GPIO_PIN_SET) {
+				cansat.mode++;
+				cnt = 0;
+			}
+			break;
+
+		case 1: //落下・分離
+			cansat.jpeg.mode = ENABLE;
+			if (cnt >= DROP_TIME * (1000 / LOOP_TIME)) {
+
+				cansat.nichrome = GPIO_PIN_SET;
+
+				if (cnt > (DROP_TIME + 1)*(1000 / LOOP_TIME)) {
+					cansat.nichrome = GPIO_PIN_RESET;
+					cansat.mode++;
+					cnt = 0;
+				}
+			}
+			break;
+
+		case 2: //キャリブレーション
+			cansat.jpeg.mode = DISABLE;
+			calibration(&cansat, 30, cnt);
+			if (cansat.mode != 2) {
+				cansat.jpeg.mode = ENABLE;
+
+				cnt = 0;
+			}
+			break;
+
+		case 3://誘導
+			cansat.jpeg.mode = ENABLE;
+			if (cansat.gps_data.mode >= 1) {
+				if (cansat.arg < -1.3) {
+					cansat.motor_L = 100;
+					cansat.motor_R = 150;
+				}
+				if (-1.3 <= cansat.arg && cansat.arg < -0.3) {
+					cansat.motor_L = 120;
+					cansat.motor_R = 170;
+				}
+				if (-0.3 <= cansat.arg && cansat.arg < +0.3) {
+					cansat.motor_L = 170;
+					cansat.motor_R = 170;
+				}
+				if (+0.3 <= cansat.arg && cansat.arg < +1.3) {
+					cansat.motor_L = 170;
+					cansat.motor_R = 120;
+				}
+				if (+1.3 <= cansat.arg) {
+					cansat.motor_L = 150;
+					cansat.motor_R = 100;
+				}
+			} else {
+				cansat.motor_L = 80;
+				cansat.motor_R = 120;
+			}
+			if (cansat.gps_data.dist < GOAL_ALEA2) {
+				cansat.motor_L = 0;
+				cansat.motor_R = 0;
+				cansat.mode++;
+				cnt = 0;
+			}
+			break;
+
+		case 4://画像認識
+			decode(&cansat);
+			if (cansat.jpeg.s > 0) {	//カラーコーンを見つけた場合
+				if (cansat.jpeg.s > SQUARE) {
+					//右
+					if (cansat.jpeg.xc < 60) {
+						xp = 1;
+						cansat.motor_L = 100;
+						cansat.motor_R = 80;
+					}
+					//やや右
+					if (cansat.jpeg.xc >= 60 && cansat.jpeg.xc < 120) {
+						xp = 1;
+						cansat.motor_L = 120;
+						cansat.motor_R = 115;
+					}
+					//中央
+					if (cansat.jpeg.xc >= 120 && cansat.jpeg.xc < 200) {
+						xp = 0;
+						cansat.motor_L = 120;
+						cansat.motor_R = 120;
+					}
+					//やや左
+					if (cansat.jpeg.xc >= 200 && cansat.jpeg.xc < 260) {
+						xp = -1;
+						cansat.motor_L = 105;
+						cansat.motor_R = 115;
+					}
+					//左
+					if (cansat.jpeg.xc >= 260) {
+						xp = -1;
+						cansat.motor_L = 80;
+						cansat.motor_R = 100;
+					}
+
+					//ゴール判定
+					dc[4] = dc[3]; dc[3] = dc[2]; dc[2] = dc[1]; dc[1] = dc[0];
+					dc[0] = (xc_p - cansat.jpeg.xc)*(xc_p - cansat.jpeg.xc) + (yc_p - cansat.jpeg.yc)*(yc_p - cansat.jpeg.yc);
+					xc_p = cansat.jpeg.xc;
+					yc_p = cansat.jpeg.yc;
+					if (n > 5) {
+						int dc_sum = dc[0] + dc[1] + dc[2] + dc[3] + dc[4];
+						if (dc_sum < GOAL)break;
+					}
+					n++;
+
+
+				} else {
+					if (xp == 1) {
+						cansat.motor_R = 85;
+						cansat.motor_L = 95;
+					} else {
+						cansat.motor_R = 95;
+						cansat.motor_L = 85;
+					}
+				}
+
+			} else {	//無かった場合
+				cansat.jpeg.xc = -1;
+				cansat.jpeg.yc = -1;
+				if (xp == 1) {
+					cansat.motor_R = 80;
+					cansat.motor_L = 100;
+				} else {
+					cansat.motor_R = 80;
+					cansat.motor_L = 100;
+				}
+			}
+			break;
+
+		case 5://ゴール
+			cansat.motor_L = 0;
+			cansat.motor_R = 0;
+			cansat.nichrome = 0;
+			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+
+		default:
+			cansat.motor_L = 0;
+			cansat.motor_R = 0;
+			cansat.nichrome = 0;
+			break;
+		}
+
+		apply(&cansat);
+
+		cnt++;
 		write(&cansat);
 		print(&cansat);
+		if (time_overflow == 0) {
+			while (TIM5->CNT < LOOP_TIME);
+		}
+		time_overflow = 0;
 		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 	}
   /* USER CODE END 3 */
@@ -220,7 +445,7 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
@@ -234,6 +459,56 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  */
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -317,9 +592,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 4;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1023;
+  htim2.Init.Period = 300;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -370,9 +645,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
+  htim3.Init.Prescaler = 4;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1023;
+  htim3.Init.Period = 300;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -401,6 +676,51 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 45000;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = LOOP_TIME;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
 
 }
 
@@ -563,12 +883,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : NICHROME_Pin */
   GPIO_InitStruct.Pin = NICHROME_Pin;

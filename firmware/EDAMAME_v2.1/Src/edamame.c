@@ -178,7 +178,7 @@ void init(myCansat *data) {
 
 	data->motor_L = 0;
 	data->motor_R = 0;
-	data->nichrome = 0;
+	data->nichrome = GPIO_PIN_RESET;
 	data->mode = 0;
 
 	compass_init(data->i2c, &data->compass_data);
@@ -257,6 +257,10 @@ void update(myCansat *data) {
 
 	data->flightPin = HAL_GPIO_ReadPin(FLIGHT_PIN_GPIO_Port, FLIGHT_PIN_Pin);
 
+	data->jpeg.xc = 0;
+	data->jpeg.yc = 0;
+	data->jpeg.s = 0;
+
 	if (data->jpeg.mode == ENABLE) {
 		for (int n = 0; n < 5; n++) {
 			while (snap_shot(&data->camera) != CAMERA_OK);
@@ -307,9 +311,7 @@ void decode(myCansat *data) {
 		}
 	}
 }
-void apply(myCansat *data) {
 
-}
 void write(myCansat *data) {
 
 	FRESULT res_fs;
@@ -351,11 +353,44 @@ void write(myCansat *data) {
 }
 void print(myCansat *data) {
 	
-	printf("\nmode:%d F:%d log_num:%3ld /%03d/%03d.jpg\n", data->mode,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
-	printf("GPS:%d TIME:%02d:%02d:%02d.%03d ", data->gps_data.mode,data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms);
-	printf("N %lu E %lu\n", data->gps_data.latitude, data->gps_data.longitude);
+	printf("\nmode:%d V=%4ldmV F:%d log_num:%3ld /%03d/%03d.jpg\n", data->mode,data->voltage,data->flightPin, data->log.log_num, data->jpeg.dir_num, data->jpeg.file_num);
+	printf("GPS:%d TIME:%02d:%02d:%02d.%03d\n", data->gps_data.mode,data->gps_data.hh, data->gps_data.mm, data->gps_data.ss, data->gps_data.ms);
+	printf("dist:%9lu   N %lu E %lu \n", data->gps_data.dist, data->gps_data.latitude, data->gps_data.longitude);
 	printf("X:%3d Y:%3d xc:%3lu yc:%3lu s:%3lu\n", data->compass_data.x, data->compass_data.y, data->jpeg.xc, data->jpeg.yc, data->jpeg.s);
 	printf("arg:%5.3f (GPS:%5.3f compass:%5.3f)\n", data->arg, data->gps_data.arg, data->compass_data.arg);
 	printf("motor( %4d , %4d ) nichrome:%d \n", data->motor_L, data->motor_R,data->nichrome);
 	
+}
+
+
+void calibration(myCansat *data, const int n, unsigned long cnt) {
+
+	static long x_max, y_max;
+	static long x_min, y_min;
+
+	data->motor_L = 100;
+	data->motor_R = 130;
+
+	if (cnt == 1) {
+		x_max = data->compass_data.x;
+		x_min = data->compass_data.x;
+		y_max = data->compass_data.y;
+		y_min = data->compass_data.y;
+	}
+
+	x_max = data->compass_data.x > x_max ? data->compass_data.x : x_max;
+	x_min = data->compass_data.x < x_min ? data->compass_data.x : x_min;
+	y_max = data->compass_data.y > y_max ? data->compass_data.y : y_max;
+	y_min = data->compass_data.y < y_min ? data->compass_data.y : y_min;
+
+
+	if (cnt >= n * (1000 / LOOP_TIME)) {
+		data->compass_data.x_offset = (x_max + x_min) / 2;
+		data->compass_data.y_offset = (y_max + y_min) / 2;
+		data->motor_L = 0;
+		data->motor_R = 0;
+		data->mode++;
+	}
+
+	return;
 }
