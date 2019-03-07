@@ -17,7 +17,7 @@ typedef struct {
 #define H_MAX_2 360 //ŒÅ’è
 
 //Ê“x‚Ì”ÍˆÍ
-#define S_MIN 50
+#define S_MIN 45
 #define S_MAX 100
 
 //–¾“x‚Ì”ÍˆÍ

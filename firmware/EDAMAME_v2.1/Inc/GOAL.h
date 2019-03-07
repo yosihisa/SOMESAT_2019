@@ -5,18 +5,8 @@
 #define DROP_TIME 20	//落下時間 [s]
 
 //ゴールの座標を指定(dd.dddddd , ddd,dddddd)
-//九工大校庭
-#define GOAL_LATITUDE	 33890196
-#define GOAL_LONGITUDE	130839266
-
-//種子島
-//#define GOAL_LATITUDE	 30.375900
-//#define GOAL_LONGITUDE	130.960693
-
-//能代
-//#define GOAL_LATITUDE	 33.8903550
-//#define GOAL_LONGITUDE	130.8402200
-
+#define GOAL_LATITUDE	 30374561
+#define GOAL_LONGITUDE	130959913
 
 //ゴールとするエリアの半径
 #define GOAL_ALEA	20
@@ -34,7 +24,7 @@
 #define H_MAX_2 360 //固定
 
 //彩度の範囲
-#define S_MIN 50
+#define S_MIN 45
 #define S_MAX 100
 
 //明度の範囲

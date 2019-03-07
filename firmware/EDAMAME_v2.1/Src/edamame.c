@@ -306,8 +306,13 @@ void decode(myCansat *data) {
 					}
 				}
 			}
-			data->jpeg.xc /= data->jpeg.s;
-			data->jpeg.yc /= data->jpeg.s;
+			if( data->jpeg.s !=0 ){
+				data->jpeg.xc /= data->jpeg.s;
+				data->jpeg.yc /= data->jpeg.s;
+			}else{
+				data->jpeg.xc = 0;
+				data->jpeg.yc = 0;
+			}
 		}
 	}
 }
